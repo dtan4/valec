@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"text/tabwriter"
@@ -11,7 +10,6 @@ import (
 	"github.com/dtan4/valec/lib"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 // listCmd represents the list command
@@ -30,15 +28,9 @@ to quickly create a Cobra application.`,
 		}
 		filename := args[0]
 
-		var configs []*lib.Config
-
-		body, err := ioutil.ReadFile(filename)
+		configs, err := lib.LoadConfigYAML(filename)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to read config file. filename=%s", filename)
-		}
-
-		if err := yaml.Unmarshal(body, &configs); err != nil {
-			return errors.Wrapf(err, "Failed to parse config file as YAML. filename=%s", filename)
+			return errors.Wrapf(err, "Failed to load configs. filename=%s", filename)
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
