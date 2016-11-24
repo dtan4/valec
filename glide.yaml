@@ -7,3 +7,4 @@ import:
   - aws
   - aws/session
   - service/kms
+- package: gopkg.in/yaml.v2
