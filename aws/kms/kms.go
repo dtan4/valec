@@ -14,14 +14,14 @@ type Client struct {
 	client *kms.KMS
 }
 
-// NewClient creates new KMSClient object
+// NewClient creates new Client object
 func NewClient() *Client {
 	return &Client{
 		client: kms.New(session.New(), &aws.Config{}),
 	}
 }
 
-// Decrypt decrypts the given bawse64-encoded cipher text
+// DecryptBase64 decrypts the given base64-encoded cipher text
 func (c *Client) DecryptBase64(key, cipherText string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(cipherText)
 	if err != nil {
@@ -35,8 +35,26 @@ func (c *Client) DecryptBase64(key, cipherText string) (string, error) {
 		},
 	})
 	if err != nil {
-		return "", errors.Wrapf(err, "Failed to decrypt the given cipherText. key=%s, value=%q", key, cipherText)
+		return "", errors.Wrapf(err, "Failed to decrypt the given cipherText. key=%s, cipherText=%q", key, cipherText)
 	}
 
 	return string(resp.Plaintext), nil
+}
+
+// EncryptBase64 encrypts the given text and return as base64-encoded cipher text
+func (c *Client) EncryptBase64(keyAlias, key, text string) (string, error) {
+	resp, err := c.client.Encrypt(&kms.EncryptInput{
+		// To use alias instead of KeyId, prefix 'alias/' is needed.
+		// https://docs.aws.amazon.com/kms/latest/developerguide/programming-aliases.html
+		KeyId:     aws.String("alias/" + keyAlias),
+		Plaintext: []byte(text),
+		EncryptionContext: map[string]*string{
+			"key": aws.String(key),
+		},
+	})
+	if err != nil {
+		return "", errors.Wrapf(err, "Failed to encrypt text. keyAlias=%s, key=%q, text=%q", keyAlias, key, text)
+	}
+
+	return base64.StdEncoding.EncodeToString(resp.CiphertextBlob), nil
 }
