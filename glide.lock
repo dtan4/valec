@@ -1,5 +1,5 @@
-hash: fa11837fc92f16c5248603534db8615b186049ed2067b7c3e82c29f62adb063a
-updated: 2016-11-24T18:57:01.578140006+09:00
+hash: fb59e39cbdd01327467c788d99a4d8bf7f79418aa1ebf3da89a928ccca18a98f
+updated: 2016-11-24T16:45:20.663134232+09:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 4a6ff995f57ee4f8994db17ae83f01a9c9cc2274
@@ -19,7 +19,6 @@ imports:
   - aws/request
   - aws/session
   - aws/signer/v4
-  - dynamodb
   - private/endpoints
   - private/protocol
   - private/protocol/json/jsonutil
@@ -28,8 +27,6 @@ imports:
   - private/protocol/query/queryutil
   - private/protocol/rest
   - private/protocol/xml/xmlutil
-  - private/waiter
-  - service/dynamodb
   - service/kms
   - service/sts
 - name: github.com/go-ini/ini
