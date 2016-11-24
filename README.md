@@ -1,5 +1,7 @@
 # Valec
 
+[![Build Status](https://travis-ci.org/dtan4/valec.svg?branch=master)](https://travis-ci.org/dtan4/valec)
+
 ## Author
 
 Daisuke Fujita (@dtan4)
