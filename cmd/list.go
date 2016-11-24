@@ -9,6 +9,7 @@ import (
 
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/lib"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -25,7 +26,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return fmt.Errorf("Please specify config file.")
+			return errors.New("Please specify config file.")
 		}
 		filename := args[0]
 
@@ -33,11 +34,11 @@ to quickly create a Cobra application.`,
 
 		body, err := ioutil.ReadFile(filename)
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "Failed to read config file. filename=%s", filename)
 		}
 
 		if err := yaml.Unmarshal(body, &configs); err != nil {
-			return err
+			return errors.Wrapf(err, "Failed to parse config file as YAML. filename=%s", filename)
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
@@ -46,7 +47,7 @@ to quickly create a Cobra application.`,
 		for _, config := range configs {
 			plainValue, err := aws.KMS().DecryptBase64(config.Key, config.Value)
 			if err != nil {
-				return err
+				return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", config.Key, config.Value)
 			}
 
 			fmt.Fprintln(w, strings.Join([]string{config.Key, plainValue}, "\t"))

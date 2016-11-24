@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/pkg/errors"
 )
 
 // Client represents the wrapper of KMS API client
@@ -24,7 +25,7 @@ func NewClient() *Client {
 func (c *Client) DecryptBase64(key, cipherText string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(cipherText)
 	if err != nil {
-		return "", err
+		return "", errors.Wrapf(err, "Failed to decode as base64 string. text=%q", cipherText)
 	}
 
 	resp, err := c.client.Decrypt(&kms.DecryptInput{
@@ -34,7 +35,7 @@ func (c *Client) DecryptBase64(key, cipherText string) (string, error) {
 		},
 	})
 	if err != nil {
-		return "", err
+		return "", errors.Wrapf(err, "Failed to decrypt the given cipherText. key=%s, value=%q", key, cipherText)
 	}
 
 	return string(resp.Plaintext), nil

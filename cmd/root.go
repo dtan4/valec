@@ -13,6 +13,7 @@ const (
 )
 
 var (
+	debug     bool
 	keyAlias  string
 	tableName string
 )
@@ -36,7 +37,11 @@ to quickly create a Cobra application.`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		if debug {
+			fmt.Printf("%+v\n", err)
+		} else {
+			fmt.Println(err)
+		}
 		os.Exit(-1)
 	}
 }
@@ -44,6 +49,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	RootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Debug mode")
 	RootCmd.PersistentFlags().StringVar(&keyAlias, "key", defaultKeyAlias, "KMS key alias")
 	RootCmd.PersistentFlags().StringVar(&tableName, "table-name", defaultTableName, "DynamoDB table name")
 }
