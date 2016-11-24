@@ -35,5 +35,8 @@ vendor/
 
 /bin
 
-*.yaml
-!glide.yaml
+/*.yaml
+!/glide.yaml
+
+/*.yml
+!/.travis.yml

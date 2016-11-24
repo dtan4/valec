@@ -1,0 +1,6 @@
+- key: FOO
+  value: bar
+- key: BAZ
+  value: 1
+- key: QUX
+  value: true

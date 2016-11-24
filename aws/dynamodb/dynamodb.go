@@ -4,6 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/dtan4/valec/lib"
 	"github.com/pkg/errors"
 )
 
@@ -50,6 +51,44 @@ func (c *Client) CreateTable(table string) error {
 	})
 	if err != nil {
 		return errors.Wrapf(err, "Failed to create DynamoDB table. table=%s", table)
+	}
+
+	return nil
+}
+
+// Insert creates / updates records of configs in DynamoDB table
+func (c *Client) Insert(table, namespace string, configs []*lib.Config) error {
+	writeRequests := []*dynamodb.WriteRequest{}
+
+	var writeRequest *dynamodb.WriteRequest
+
+	for _, config := range configs {
+		writeRequest = &dynamodb.WriteRequest{
+			PutRequest: &dynamodb.PutRequest{
+				Item: map[string]*dynamodb.AttributeValue{
+					"namespace": &dynamodb.AttributeValue{
+						S: aws.String(namespace),
+					},
+					"key": &dynamodb.AttributeValue{
+						S: aws.String(config.Key),
+					},
+					"value": &dynamodb.AttributeValue{
+						S: aws.String(config.Value),
+					},
+				},
+			},
+		}
+		writeRequests = append(writeRequests, writeRequest)
+	}
+
+	requestItems := make(map[string][]*dynamodb.WriteRequest)
+	requestItems[table] = writeRequests
+
+	_, err := c.client.BatchWriteItem(&dynamodb.BatchWriteItemInput{
+		RequestItems: requestItems,
+	})
+	if err != nil {
+		return errors.Wrap(err, "Failed to insert items.")
 	}
 
 	return nil
