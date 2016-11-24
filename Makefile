@@ -1,4 +1,4 @@
-NAME      := valhub
+NAME      := valec
 VERSION   := v0.1.0
 REVISION  := $(shell git rev-parse --short HEAD)
 

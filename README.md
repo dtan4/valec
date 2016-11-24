@@ -1,4 +1,4 @@
-# Valhub
+# Valec
 
 ## Author
 

@@ -1,3 +1,3 @@
-package: github.com/dtan4/valhub
+package: github.com/dtan4/valec
 import:
 - package: github.com/spf13/cobra
