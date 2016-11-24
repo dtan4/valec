@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var configFile string
+
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
@@ -23,14 +25,26 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return errors.New("Please specify config file.")
-		}
-		filename := args[0]
+		var (
+			configs []*lib.Config
+			err     error
+		)
 
-		configs, err := lib.LoadConfigYAML(filename)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to load configs. filename=%s", filename)
+		if configFile == "" {
+			if len(args) != 1 {
+				return errors.New("Please specify namespace or config file (-f FILE).")
+			}
+			namespace := args[0]
+
+			configs, err = aws.DynamoDB().List(tableName, namespace)
+			if err != nil {
+				return errors.Wrapf(err, "Failed to load configs from DynamoDB. namespace=%s", namespace)
+			}
+		} else {
+			configs, err = lib.LoadConfigYAML(configFile)
+			if err != nil {
+				return errors.Wrapf(err, "Failed to load configs from file. filename=%s", configFile)
+			}
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
@@ -53,4 +67,6 @@ to quickly create a Cobra application.`,
 
 func init() {
 	RootCmd.AddCommand(listCmd)
+
+	listCmd.Flags().StringVarP(&configFile, "file", "f", "", "Config file")
 }

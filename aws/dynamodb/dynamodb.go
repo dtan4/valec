@@ -93,3 +93,40 @@ func (c *Client) Insert(table, namespace string, configs []*lib.Config) error {
 
 	return nil
 }
+
+// List returns all configs in the given table and namespace
+func (c *Client) List(table, namespace string) ([]*lib.Config, error) {
+	keyConditions := map[string]*dynamodb.Condition{
+		"namespace": &dynamodb.Condition{
+			ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+			AttributeValueList: []*dynamodb.AttributeValue{
+				&dynamodb.AttributeValue{
+					S: aws.String(namespace),
+				},
+			},
+		},
+	}
+	params := &dynamodb.QueryInput{
+		TableName:     aws.String(table),
+		KeyConditions: keyConditions,
+	}
+
+	resp, err := c.client.Query(params)
+	if err != nil {
+		return []*lib.Config{}, errors.Wrapf(err, "Failed to list up configs. namespace=%s", namespace)
+	}
+
+	configs := []*lib.Config{}
+	var config *lib.Config
+
+	for _, item := range resp.Items {
+		config = &lib.Config{
+			Key:   *item["key"].S,
+			Value: *item["value"].S,
+		}
+
+		configs = append(configs, config)
+	}
+
+	return configs, nil
+}
