@@ -1,7 +1,9 @@
 package lib
 
 import (
+	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -33,6 +35,34 @@ func TestLoadConfigFromYAML_valid(t *testing.T) {
 		if config.Value != expects[i].value {
 			t.Errorf("Config value does not match. expected: %s, actual: %s", expects[i].value, config.Value)
 		}
+	}
+}
+
+func TestLoadConfigFromYAML_invalid(t *testing.T) {
+	filepath := testdataPath("test_invalid.yaml")
+	_, err := LoadConfigYAML(filepath)
+	if err == nil {
+		t.Fatalf("Error should be raised. error: %s", err)
+	}
+
+	expected := fmt.Sprintf("Failed to parse config file as YAML. filename=%s", filepath)
+
+	if !strings.HasPrefix(err.Error(), expected) {
+		t.Fatalf("Error message prefix does not match. expected prefix: %q, actual message: %q", expected, err.Error())
+	}
+}
+
+func TestLoadConfigFromYAML_notexist(t *testing.T) {
+	filepath := testdataPath("test_notexist.yaml")
+	_, err := LoadConfigYAML(filepath)
+	if err == nil {
+		t.Fatalf("Error should be raised. error: %s", err)
+	}
+
+	expected := fmt.Sprintf("Failed to read config file. filename=%s", filepath)
+
+	if !strings.HasPrefix(err.Error(), expected) {
+		t.Fatalf("Error message prefix does not match. expected prefix: %q, actual message: %q", expected, err.Error())
 	}
 }
 

@@ -1,0 +1,5 @@
+namespace: hoge
+- key: FOO
+  value: bar
+- key: BAZ
+  value: 1
