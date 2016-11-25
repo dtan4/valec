@@ -154,3 +154,19 @@ func (c *Client) ListNamespaces(table string) ([]string, error) {
 
 	return namespaces, nil
 }
+
+// TableExists check whether the given table exists or not
+func (c *Client) TableExists(table string) (bool, error) {
+	resp, err := c.client.ListTables(&dynamodb.ListTablesInput{})
+	if err != nil {
+		return false, errors.Wrap(err, "Failed to retrieve DynamoDB tables.")
+	}
+
+	for _, tableName := range resp.TableNames {
+		if *tableName == table {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}

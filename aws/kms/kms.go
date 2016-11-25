@@ -21,6 +21,31 @@ func NewClient() *Client {
 	}
 }
 
+// CreateKey creates new key and returns key ID
+func (c *Client) CreateKey() (string, error) {
+	resp, err := c.client.CreateKey(&kms.CreateKeyInput{
+		Description: aws.String("Key for Valec"),
+	})
+	if err != nil {
+		return "", errors.Wrap(err, "Failed to create key.")
+	}
+
+	return *resp.KeyMetadata.KeyId, nil
+}
+
+// CreateKeyAlias attaches key alias to the given key
+func (c *Client) CreateKeyAlias(keyID, keyAlias string) error {
+	_, err := c.client.CreateAlias(&kms.CreateAliasInput{
+		AliasName:   aws.String(keyAliasWithPrefix(keyAlias)),
+		TargetKeyId: aws.String(keyID),
+	})
+	if err != nil {
+		return errors.Wrapf(err, "Failed to create key alias. keyID=%s, keyAlias=%s", keyID, keyAlias)
+	}
+
+	return nil
+}
+
 // DecryptBase64 decrypts the given base64-encoded cipher text
 func (c *Client) DecryptBase64(key, cipherText string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(cipherText)
@@ -44,9 +69,8 @@ func (c *Client) DecryptBase64(key, cipherText string) (string, error) {
 // EncryptBase64 encrypts the given text and return as base64-encoded cipher text
 func (c *Client) EncryptBase64(keyAlias, key, text string) (string, error) {
 	resp, err := c.client.Encrypt(&kms.EncryptInput{
-		// To use alias instead of KeyId, prefix 'alias/' is needed.
-		// https://docs.aws.amazon.com/kms/latest/developerguide/programming-aliases.html
-		KeyId:     aws.String("alias/" + keyAlias),
+
+		KeyId:     aws.String(keyAliasWithPrefix(keyAlias)),
 		Plaintext: []byte(text),
 		EncryptionContext: map[string]*string{
 			"key": aws.String(key),
@@ -57,4 +81,28 @@ func (c *Client) EncryptBase64(keyAlias, key, text string) (string, error) {
 	}
 
 	return base64.StdEncoding.EncodeToString(resp.CiphertextBlob), nil
+}
+
+// KeyExists checks whether the given key exists or not
+func (c *Client) KeyExists(keyAlias string) (bool, error) {
+	resp, err := c.client.ListAliases(&kms.ListAliasesInput{})
+	if err != nil {
+		return false, errors.Wrap(err, "Failed to retrieve key aliases.")
+	}
+
+	aliasWithPrefix := keyAliasWithPrefix(keyAlias)
+
+	for _, alias := range resp.Aliases {
+		if *alias.AliasName == aliasWithPrefix {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func keyAliasWithPrefix(keyAlias string) string {
+	// To use alias instead of KeyId, prefix 'alias/' is needed.
+	// https://docs.aws.amazon.com/kms/latest/developerguide/programming-aliases.html
+	return "alias/" + keyAlias
 }
