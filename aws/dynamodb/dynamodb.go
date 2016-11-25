@@ -130,3 +130,27 @@ func (c *Client) List(table, namespace string) ([]*lib.Config, error) {
 
 	return configs, nil
 }
+
+// ListNamespaces returns all namespaces
+func (c *Client) ListNamespaces(table string) ([]string, error) {
+	resp, err := c.client.Scan(&dynamodb.ScanInput{
+		TableName: aws.String(table),
+	})
+	if err != nil {
+		return []string{}, errors.Wrapf(err, "Failed to retrieve items from DynamoDB table. table=$s", table)
+	}
+
+	nsmap := map[string]bool{}
+
+	for _, item := range resp.Items {
+		nsmap[*item["namespace"].S] = true
+	}
+
+	namespaces := []string{}
+
+	for k := range nsmap {
+		namespaces = append(namespaces, k)
+	}
+
+	return namespaces, nil
+}
