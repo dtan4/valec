@@ -23,7 +23,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
-			return errors.New("Please specify namespace or config file (-f FILE).")
+			return errors.New("Please specify namespace.")
 		}
 		namespace := args[0]
 
