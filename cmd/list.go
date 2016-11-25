@@ -16,14 +16,16 @@ var configFile string
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "list [NAMESPACE]",
+	Short: "List stored secrets",
+	Long: `List stored secrets
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+To list secrets stored in DynamoDB, specify namespace:
+  $ valec list NAMESPACE
+To list secrets stored in local file, specify file:
+  $ valec list -f qa.yaml
+
+Encrypted values are decrypted and printed as plain text.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
 			configs []*lib.Config

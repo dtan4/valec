@@ -23,13 +23,9 @@ var RootCmd = &cobra.Command{
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	Use:           "valec",
-	Short:         "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short:         "Handle application secrets securely",
+	Long: `Valec is a CLI tool to handle application secrets securely using AWS DynamoDB and KMS.
+Valec enables you to manage application secrets in your favorite VCS.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
