@@ -12,10 +12,16 @@ const (
 	defaultTableName = "valec"
 )
 
+// global flag variable
 var (
 	debug     bool
 	keyAlias  string
 	tableName string
+)
+
+// command-specific flag variable
+var (
+	configFile string
 )
 
 // RootCmd represents the base command when called without any subcommands
