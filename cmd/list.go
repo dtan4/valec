@@ -36,7 +36,7 @@ Encrypted values are decrypted and printed as plain text.`,
 			}
 			namespace := args[0]
 
-			configs, err = aws.DynamoDB().List(tableName, namespace)
+			configs, err = aws.DynamoDB().ListConfigs(tableName, namespace)
 			if err != nil {
 				return errors.Wrapf(err, "Failed to load configs from DynamoDB. namespace=%s", namespace)
 			}

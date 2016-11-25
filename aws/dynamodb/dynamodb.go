@@ -94,8 +94,8 @@ func (c *Client) Insert(table, namespace string, configs []*lib.Config) error {
 	return nil
 }
 
-// List returns all configs in the given table and namespace
-func (c *Client) List(table, namespace string) ([]*lib.Config, error) {
+// ListConfigs returns all configs in the given table and namespace
+func (c *Client) ListConfigs(table, namespace string) ([]*lib.Config, error) {
 	keyConditions := map[string]*dynamodb.Condition{
 		"namespace": &dynamodb.Condition{
 			ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
