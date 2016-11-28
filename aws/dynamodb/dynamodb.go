@@ -137,7 +137,7 @@ func (c *Client) ListNamespaces(table string) ([]string, error) {
 		TableName: aws.String(table),
 	})
 	if err != nil {
-		return []string{}, errors.Wrapf(err, "Failed to retrieve items from DynamoDB table. table=$s", table)
+		return []string{}, errors.Wrapf(err, "Failed to retrieve items from DynamoDB table. table=%s", table)
 	}
 
 	nsmap := map[string]bool{}
