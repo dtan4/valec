@@ -63,12 +63,12 @@ $ valec namespaces
 hoge
 ```
 
-### `valec save`
+### `valec sync`
 
-Save secrets in local file to DynamoDB
+Synchronize secrets between local file and DynamoDB
 
 ```bash
-$ valec save hoge.yaml
+$ valec sync hoge.yaml
 ```
 
 ## Development

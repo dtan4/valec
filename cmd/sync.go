@@ -15,10 +15,10 @@ var (
 	yamlExtRegexp = regexp.MustCompile(`\.[yY][aA]?[mM][lL]$`)
 )
 
-// saveCmd represents the save command
-var saveCmd = &cobra.Command{
-	Use:   "save",
-	Short: "Save secrets in local file to DynamoDB",
+// syncCmd represents the sync command
+var syncCmd = &cobra.Command{
+	Use:   "sync",
+	Short: "Synchronize secrets between local file and DynamoDB",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return errors.New("Please specify config file.")
@@ -36,12 +36,12 @@ var saveCmd = &cobra.Command{
 			return errors.Wrapf(err, "Failed to insert configs. namespace=%s", namespace)
 		}
 
-		fmt.Printf("%d configs of %q namespace are successfully saved!\n", len(configs), namespace)
+		fmt.Printf("%d configs of %q namespace are successfully synchronized!\n", len(configs), namespace)
 
 		return nil
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(saveCmd)
+	RootCmd.AddCommand(syncCmd)
 }
