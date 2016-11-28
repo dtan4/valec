@@ -82,7 +82,7 @@ $ make deps
 $ make
 ```
 
-## Authorp
+## Author
 
 Daisuke Fujita (@dtan4)
 
