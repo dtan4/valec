@@ -13,6 +13,35 @@ type Config struct {
 	Value string `yaml:"value"`
 }
 
+// CompareConfigList compares two config lists and returns the differences between them
+func CompareConfigList(src, dst []*Config) ([]*Config, []*Config) {
+	added, deleted := []*Config{}, []*Config{}
+
+	for _, c := range src {
+		if !configExists(c, dst) {
+			added = append(added, c)
+		}
+	}
+
+	for _, c := range dst {
+		if !configExists(c, src) {
+			deleted = append(deleted, c)
+		}
+	}
+
+	return added, deleted
+}
+
+func configExists(config *Config, configs []*Config) bool {
+	for _, c := range configs {
+		if config.Key == c.Key && config.Value == c.Value {
+			return true
+		}
+	}
+
+	return false
+}
+
 // LoadConfigYAML loads configs from the given YAML file
 func LoadConfigYAML(filename string) ([]*Config, error) {
 	body, err := ioutil.ReadFile(filename)
