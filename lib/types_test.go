@@ -7,6 +7,104 @@ import (
 	"testing"
 )
 
+func TestCompareConfigList(t *testing.T) {
+	src := []*Config{
+		&Config{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Config{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Config{
+			Key:   "HOGE",
+			Value: "fuga",
+		},
+	}
+	dst := []*Config{
+		&Config{
+			Key:   "FOO",
+			Value: "baz",
+		},
+		&Config{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Config{
+			Key:   "QUX",
+			Value: "true",
+		},
+		&Config{
+			Key:   "PIYO",
+			Value: "piyo",
+		},
+	}
+
+	expectAdded := []*Config{
+		&Config{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Config{
+			Key:   "HOGE",
+			Value: "fuga",
+		},
+	}
+	expectDeleted := []*Config{
+		&Config{
+			Key:   "FOO",
+			Value: "baz",
+		},
+		&Config{
+			Key:   "QUX",
+			Value: "true",
+		},
+		&Config{
+			Key:   "PIYO",
+			Value: "piyo",
+		},
+	}
+
+	added, deleted := CompareConfigList(src, dst)
+
+	if !configListsEqual(added, expectAdded) {
+		t.Errorf("Returned added configs are wrong. expected: %s, actual: %s", stringifyConfigList(expectAdded), stringifyConfigList(added))
+	}
+
+	if !configListsEqual(deleted, expectDeleted) {
+		t.Errorf("Returned deleted configs are wrong. expected: %s, actual: %s", stringifyConfigList(expectDeleted), stringifyConfigList(deleted))
+	}
+}
+
+func configListsEqual(a, b []*Config) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i := range a {
+		if a[i].Key != b[i].Key {
+			return false
+		}
+
+		if a[i].Value != b[i].Value {
+			return false
+		}
+	}
+
+	return true
+}
+
+func stringifyConfigList(configs []*Config) string {
+	ss := []string{}
+
+	for _, config := range configs {
+		ss = append(ss, fmt.Sprintf("%#v", config))
+	}
+
+	return fmt.Sprintf("[%s]", strings.Join(ss, ", "))
+}
+
 func TestLoadConfigFromYAML_valid(t *testing.T) {
 	filepath := testdataPath("test_valid.yaml")
 	configs, err := LoadConfigYAML(filepath)
