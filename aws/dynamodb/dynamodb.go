@@ -56,8 +56,51 @@ func (c *Client) CreateTable(table string) error {
 	return nil
 }
 
+// Delete deletes records from DynamoDB table
+func (c *Client) Delete(table, namespace string, configs []*lib.Config) error {
+	if len(configs) == 0 {
+		return nil
+	}
+
+	writeRequests := []*dynamodb.WriteRequest{}
+
+	var writeRequest *dynamodb.WriteRequest
+
+	for _, config := range configs {
+		writeRequest = &dynamodb.WriteRequest{
+			DeleteRequest: &dynamodb.DeleteRequest{
+				Key: map[string]*dynamodb.AttributeValue{
+					"namespace": &dynamodb.AttributeValue{
+						S: aws.String(namespace),
+					},
+					"key": &dynamodb.AttributeValue{
+						S: aws.String(config.Key),
+					},
+				},
+			},
+		}
+		writeRequests = append(writeRequests, writeRequest)
+	}
+
+	requestItems := make(map[string][]*dynamodb.WriteRequest)
+	requestItems[table] = writeRequests
+
+	_, err := c.client.BatchWriteItem(&dynamodb.BatchWriteItemInput{
+		RequestItems: requestItems,
+	})
+	if err != nil {
+		return errors.Wrap(err, "Failed to delete items.")
+	}
+
+	return nil
+}
+
 // Insert creates / updates records of configs in DynamoDB table
 func (c *Client) Insert(table, namespace string, configs []*lib.Config) error {
+	if len(configs) == 0 {
+		return nil
+	}
+
 	writeRequests := []*dynamodb.WriteRequest{}
 
 	var writeRequest *dynamodb.WriteRequest
