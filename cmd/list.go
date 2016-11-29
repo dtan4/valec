@@ -2,9 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"strings"
-	"text/tabwriter"
 
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/lib"
@@ -47,8 +44,7 @@ Encrypted values are decrypted and printed as plain text.`,
 			}
 		}
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
-		fmt.Fprintln(w, strings.Join([]string{"KEY", "VALUE"}, "\t"))
+		longestLength := longestKeyLength(configs)
 
 		for _, config := range configs {
 			plainValue, err := aws.KMS().DecryptBase64(config.Key, config.Value)
@@ -56,13 +52,28 @@ Encrypted values are decrypted and printed as plain text.`,
 				return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", config.Key, config.Value)
 			}
 
-			fmt.Fprintln(w, strings.Join([]string{config.Key, plainValue}, "\t"))
-		}
+			padding := ""
+			for i := 0; i < longestLength-len(config.Key); i++ {
+				padding += " "
+			}
 
-		w.Flush()
+			fmt.Printf("%s:%s %s\n", config.Key, padding, plainValue)
+		}
 
 		return nil
 	},
+}
+
+func longestKeyLength(configs []*lib.Config) int {
+	longest := 0
+
+	for _, config := range configs {
+		if longest < len(config.Key) {
+			longest = len(config.Key)
+		}
+	}
+
+	return longest
 }
 
 func init() {

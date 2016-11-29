@@ -71,6 +71,7 @@ List stored secrets
 ```bash
 # List secrets stored in DynamoDB
 $ valec list hoge
+HOGE: fuga
 
 # List secrets stored in local file
 $ valec list -f hoge.yaml
