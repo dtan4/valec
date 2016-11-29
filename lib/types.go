@@ -16,15 +16,18 @@ type Config struct {
 // CompareConfigList compares two config lists and returns the differences between them
 func CompareConfigList(src, dst []*Config) ([]*Config, []*Config) {
 	added, deleted := []*Config{}, []*Config{}
+	srcMap, dstMap := ConfigsToMap(src), ConfigsToMap(dst)
 
 	for _, c := range src {
-		if !configExists(c, dst) {
+		v, ok := dstMap[c.Key]
+		if !ok || v != c.Value {
 			added = append(added, c)
 		}
 	}
 
 	for _, c := range dst {
-		if !configExists(c, src) {
+		v, ok := srcMap[c.Key]
+		if !ok || v != c.Value {
 			deleted = append(deleted, c)
 		}
 	}
@@ -32,14 +35,15 @@ func CompareConfigList(src, dst []*Config) ([]*Config, []*Config) {
 	return added, deleted
 }
 
-func configExists(config *Config, configs []*Config) bool {
-	for _, c := range configs {
-		if config.Key == c.Key && config.Value == c.Value {
-			return true
-		}
+// ConfigsToMap converts config list to map
+func ConfigsToMap(configs []*Config) map[string]string {
+	configMap := map[string]string{}
+
+	for _, config := range configs {
+		configMap[config.Key] = config.Value
 	}
 
-	return false
+	return configMap
 }
 
 // LoadConfigYAML loads configs from the given YAML file

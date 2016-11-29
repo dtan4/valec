@@ -3,6 +3,7 @@ package lib
 import (
 	"fmt"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -133,6 +134,34 @@ func TestLoadConfigFromYAML_valid(t *testing.T) {
 		if config.Value != expects[i].value {
 			t.Errorf("Config value does not match. expected: %s, actual: %s", expects[i].value, config.Value)
 		}
+	}
+}
+
+func TestConfigsToMap(t *testing.T) {
+	configs := []*Config{
+		&Config{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Config{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Config{
+			Key:   "HOGE",
+			Value: "fuga",
+		},
+	}
+	expected := map[string]string{
+		"FOO":  "bar",
+		"BAZ":  "1",
+		"HOGE": "fuga",
+	}
+
+	configMap := ConfigsToMap(configs)
+
+	if !reflect.DeepEqual(configMap, expected) {
+		t.Errorf("Config map does not match. expected: %q, actual:%q", expected, configMap)
 	}
 }
 
