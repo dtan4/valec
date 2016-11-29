@@ -40,3 +40,5 @@ vendor/
 
 /*.yml
 !/.travis.yml
+
+/.env
