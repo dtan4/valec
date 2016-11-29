@@ -32,6 +32,17 @@ func CompareConfigList(src, dst []*Config) ([]*Config, []*Config) {
 	return added, deleted
 }
 
+// ConfigsToMap converts config list to map
+func ConfigsToMap(configs []*Config) map[string]string {
+	configMap := map[string]string{}
+
+	for _, config := range configs {
+		configMap[config.Key] = config.Value
+	}
+
+	return configMap
+}
+
 func configExists(config *Config, configs []*Config) bool {
 	for _, c := range configs {
 		if config.Key == c.Key && config.Value == c.Value {
