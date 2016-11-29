@@ -11,4 +11,5 @@ var (
 var (
 	configFile     string
 	dotenvTemplate string
+	override       bool
 )

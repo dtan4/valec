@@ -80,7 +80,7 @@ func dumpWithTemplate(configs []*lib.Config) error {
 
 		key, value := ss[0], ss[1]
 
-		if value == "" {
+		if override || value == "" {
 			v, ok := configMap[key]
 			if ok {
 				plainValue, err := aws.KMS().DecryptBase64(key, v)
@@ -101,5 +101,6 @@ func dumpWithTemplate(configs []*lib.Config) error {
 func init() {
 	RootCmd.AddCommand(dumpCmd)
 
+	dumpCmd.Flags().BoolVarP(&override, "override", "o", false, "Override values in existing template")
 	dumpCmd.Flags().StringVarP(&dotenvTemplate, "template", "t", "", "Dotenv template")
 }
