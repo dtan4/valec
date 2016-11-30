@@ -28,9 +28,26 @@ clean:
 	rm -rf bin/*
 	rm -rf vendor/*
 
+.PHONY: cross-build
+cross-build: deps
+	for os in darwin linux windows; do \
+		for arch in amd64 386; do \
+			GOOS=$$os GOARCH=$$arch go build $(LDFLAGS) -o dist/$$os-$$arch/$(NAME); \
+		done; \
+	done
+
 .PHONY: deps
 deps: glide
 	glide install
+
+.PHONY: dist
+dist:
+	cd dist && \
+	$(DIST_DIRS) cp ../LICENSE {} \; && \
+	$(DIST_DIRS) cp ../README.md {} \; && \
+	$(DIST_DIRS) tar -zcf $(NAME)-$(VERSION)-{}.tar.gz {} \; && \
+	$(DIST_DIRS) zip -r $(NAME)-$(VERSION)-{}.zip {} \; && \
+	cd ..
 
 .PHONY: glide
 glide:
