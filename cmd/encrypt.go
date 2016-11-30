@@ -35,22 +35,21 @@ var encryptCmd = &cobra.Command{
 		if configFile == "" {
 			fmt.Println(cipherText)
 		} else {
-			configs := []*lib.Config{}
+			configMap := map[string]string{}
 
 			if _, err := os.Stat(configFile); err == nil {
-				var err2 error
-				configs, err2 = lib.LoadConfigYAML(configFile)
+				configs, err2 := lib.LoadConfigYAML(configFile)
 				if err2 != nil {
 					return errors.Wrapf(err2, "Failed to load local config file. filename=%s", configFile)
 				}
+
+				configMap = lib.ConfigsToMap(configs)
 			}
 
-			configs = append(configs, &lib.Config{
-				Key:   key,
-				Value: cipherText,
-			})
+			configMap[key] = cipherText
+			newConfigs := lib.MapToConfigs(configMap)
 
-			if err := lib.SaveAsYAML(configs, configFile); err != nil {
+			if err := lib.SaveAsYAML(newConfigs, configFile); err != nil {
 				return errors.Wrapf(err, "Failed to update local config file. filename=%s", configFile)
 			}
 		}

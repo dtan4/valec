@@ -62,6 +62,20 @@ func LoadConfigYAML(filename string) ([]*Config, error) {
 	return configs, nil
 }
 
+// MapToConfigs converts map to config list
+func MapToConfigs(configMap map[string]string) []*Config {
+	configs := []*Config{}
+
+	for key, value := range configMap {
+		configs = append(configs, &Config{
+			Key:   key,
+			Value: value,
+		})
+	}
+
+	return configs
+}
+
 // SaveAsYAML saves configs to local config file
 func SaveAsYAML(configs []*Config, filename string) error {
 	body, err := yaml.Marshal(configs)

@@ -199,6 +199,34 @@ func testdataPath(name string) string {
 	return filepath.Join("..", "testdata", name)
 }
 
+func TestMapToConfigs(t *testing.T) {
+	configMap := map[string]string{
+		"FOO":  "bar",
+		"BAZ":  "1",
+		"HOGE": "fuga",
+	}
+	expected := []*Config{
+		&Config{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Config{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Config{
+			Key:   "HOGE",
+			Value: "fuga",
+		},
+	}
+
+	configs := MapToConfigs(configMap)
+
+	if !reflect.DeepEqual(configs, expected) {
+		t.Errorf("Config list does not match. expected: %q, actual:%q", expected, configs)
+	}
+}
+
 func TestSaveAsYAML(t *testing.T) {
 	configs := []*Config{
 		&Config{
