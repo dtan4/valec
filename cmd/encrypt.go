@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/dtan4/valec/aws"
+	"github.com/dtan4/valec/lib"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +32,27 @@ var encryptCmd = &cobra.Command{
 			return errors.Wrapf(err, "Failed to encrypt.")
 		}
 
-		fmt.Println(cipherText)
+		if configFile == "" {
+			fmt.Println(cipherText)
+		} else {
+			configMap := map[string]string{}
+
+			if _, err := os.Stat(configFile); err == nil {
+				configs, err2 := lib.LoadConfigYAML(configFile)
+				if err2 != nil {
+					return errors.Wrapf(err2, "Failed to load local config file. filename=%s", configFile)
+				}
+
+				configMap = lib.ConfigsToMap(configs)
+			}
+
+			configMap[key] = cipherText
+			newConfigs := lib.MapToConfigs(configMap)
+
+			if err := lib.SaveAsYAML(newConfigs, configFile); err != nil {
+				return errors.Wrapf(err, "Failed to update local config file. filename=%s", configFile)
+			}
+		}
 
 		return nil
 	},
@@ -38,4 +60,6 @@ var encryptCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(encryptCmd)
+
+	encryptCmd.Flags().StringVar(&configFile, "add", "", "Add to local config file")
 }

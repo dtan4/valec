@@ -41,6 +41,22 @@ YEAR=2015
 SSSS=
 ```
 
+### `valec encrypt`
+
+Encrypt secret
+
+With `--add FILE` flag, encrypted secret will be added to the specified file.
+
+```bash
+$ valec encrypt NAME=awesome
+AQECAHi1osu8IsEnPMo1...
+
+$ valec encrypt NAME=awesome --add secrets.yml
+$ cat secrets.yml
+- key: NAME
+  value: AQECAHi1osu8IsEnPMo1...
+```
+
 ### `valec exec`
 
 Execute commands using stored secrets
