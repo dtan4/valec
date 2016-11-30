@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/dtan4/valec/aws"
@@ -34,9 +35,14 @@ var encryptCmd = &cobra.Command{
 		if configFile == "" {
 			fmt.Println(cipherText)
 		} else {
-			configs, err := lib.LoadConfigYAML(configFile)
-			if err != nil {
-				return errors.Wrapf(err, "Failed to load local config file. filename=%s", configFile)
+			configs := []*lib.Config{}
+
+			if _, err := os.Stat(configFile); err == nil {
+				var err2 error
+				configs, err2 = lib.LoadConfigYAML(configFile)
+				if err2 != nil {
+					return errors.Wrapf(err2, "Failed to load local config file. filename=%s", configFile)
+				}
 			}
 
 			configs = append(configs, &lib.Config{
