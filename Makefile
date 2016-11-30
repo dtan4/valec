@@ -3,7 +3,7 @@ VERSION   := v0.1.0
 REVISION  := $(shell git rev-parse --short HEAD)
 
 SRCS      := $(shell find . -name '*.go' -type f)
-LDFLAGS   := -ldflags="-s -w -X \"main.Version=$(VERSION)\" -X \"main.Revision=$(REVISION)\""
+LDFLAGS   := -ldflags="-s -w -X \"github.com/dtan4/valec/version.Version=$(VERSION)\" -X \"github.com/dtan4/valec/version.Revision=$(REVISION)\""
 
 DIST_DIRS := find * -type d -exec
 
