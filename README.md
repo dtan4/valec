@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/dtan4/valec.svg?branch=master)](https://travis-ci.org/dtan4/valec)
 [![codecov](https://codecov.io/gh/dtan4/valec/branch/master/graph/badge.svg)](https://codecov.io/gh/dtan4/valec)
+[![GitHub release](https://img.shields.io/github/release/dtan4/valec.svg)](https://github.com/dtan4/valec/releases)
 
 Handle application secrets securely
 
