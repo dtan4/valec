@@ -42,3 +42,5 @@ vendor/
 !/.travis.yml
 
 /.env
+
+/coverage.txt
