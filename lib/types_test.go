@@ -2,6 +2,8 @@ package lib
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -195,4 +197,41 @@ func TestLoadConfigFromYAML_notexist(t *testing.T) {
 
 func testdataPath(name string) string {
 	return filepath.Join("..", "testdata", name)
+}
+
+func TestSaveAsYAML(t *testing.T) {
+	configs := []*Config{
+		&Config{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Config{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Config{
+			Key:   "HOGE",
+			Value: "fuga",
+		},
+	}
+
+	dir, err := ioutil.TempDir("", "test-save-as-yaml")
+	if err != nil {
+		t.Fatalf("Failed to create tempdir. dir: %s", dir)
+	}
+	defer os.RemoveAll(dir)
+
+	filename := filepath.Join(dir, "config.yaml")
+
+	if err := SaveAsYAML(configs, filename); err != nil {
+		t.Fatalf("Error should not be raised. err: %s", err)
+	}
+
+	if _, err := os.Stat(filename); err != nil {
+		if os.IsNotExist(err) {
+			t.Fatalf("File is not created. err: %s", err)
+		} else {
+			t.Fatalf("Saved file has something wrong. err: %s", err)
+		}
+	}
 }

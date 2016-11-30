@@ -61,3 +61,17 @@ func LoadConfigYAML(filename string) ([]*Config, error) {
 
 	return configs, nil
 }
+
+// SaveAsYAML saves configs to local config file
+func SaveAsYAML(configs []*Config, filename string) error {
+	body, err := yaml.Marshal(configs)
+	if err != nil {
+		return errors.Wrap(err, "Failed to convert configs as YAML.")
+	}
+
+	if err := ioutil.WriteFile(filename, body, 0644); err != nil {
+		return errors.Wrapf(err, "Failed to save file. filename=%s", filename)
+	}
+
+	return nil
+}
