@@ -45,24 +45,40 @@ var syncCmd = &cobra.Command{
 
 		added, deleted := lib.CompareConfigList(srcConfigs, dstConfigs)
 
-		if err := aws.DynamoDB().Delete(tableName, namespace, deleted); err != nil {
-			return errors.Wrapf(err, "Failed to delete configs. namespace=%s", namespace)
-		}
-
 		if len(deleted) > 0 {
-			fmt.Printf("%d configs of %q namespace were successfully deleted!\n", len(deleted), namespace)
+			fmt.Printf("%d configs of %s namespace will be deleted.\n", len(deleted), namespace)
+			for _, config := range deleted {
+				fmt.Printf("- %s\n", config.Key)
+			}
+
+			if !dryRun {
+				if err := aws.DynamoDB().Delete(tableName, namespace, deleted); err != nil {
+					return errors.Wrapf(err, "Failed to delete configs. namespace=%s", namespace)
+				}
+
+				fmt.Printf("%d configs of %s namespace were successfully deleted.\n", len(deleted), namespace)
+			}
 		} else {
-			fmt.Println("No config was deleted.")
+			fmt.Println("No config will be deleted.")
 		}
 
-		if err := aws.DynamoDB().Insert(tableName, namespace, added); err != nil {
-			return errors.Wrapf(err, "Failed to insert configs. namespace=%s", namespace)
-		}
+		fmt.Println("")
 
 		if len(added) > 0 {
-			fmt.Printf("%d configs of %q namespace were successfully added!\n", len(added), namespace)
+			fmt.Printf("%d configs of %s namespace will be added.\n", len(added), namespace)
+			for _, config := range added {
+				fmt.Printf("- %s\n", config.Key)
+			}
+
+			if !dryRun {
+				if err := aws.DynamoDB().Insert(tableName, namespace, added); err != nil {
+					return errors.Wrapf(err, "Failed to insert configs. namespace=%s", namespace)
+				}
+
+				fmt.Printf("%d configs of %s namespace were successfully added.\n", len(added), namespace)
+			}
 		} else {
-			fmt.Println("No config was added.")
+			fmt.Println("No config will be added.")
 		}
 
 		return nil
@@ -71,4 +87,6 @@ var syncCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(syncCmd)
+
+	syncCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Dry run")
 }
