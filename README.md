@@ -23,23 +23,25 @@ HOGE=fuga
 With `-t TEMPLATE` flag, Valec dumps secrets as the form of embedding them in the given dotenv file. To override all values written in dotenv file, please specify `--override` flag too.
 
 ```bash
-$ cat .env
+$ cat .env.sample
 FOO=
 HOGE=hogehoge
 hogehoge
 YEAR=2015
 
-# hogefugapiyo
+# comment
 SSSS=
 
-$ valec dump hoge -t .env
+$ valec dump hoge -t .env.sample
 FOO=barbarbar
 HOGE=hogehoge
 hogehoge
 YEAR=2015
 
-# hogefugapiyo
+# comment
 SSSS=
+
+$ valec dump hoge -t .env.sample > .env
 ```
 
 ### `valec encrypt`
