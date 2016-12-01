@@ -9,6 +9,53 @@ Handle application secrets securely
 Valec is a CLI tool to handle application secrets securely using AWS DynamoDB and KMS.
 Valec enables you to manage application secrets in your favorite VCS.
 
+## Workflow
+
+1. Set up DynamoDB and KMS (first time only).
+
+    ```bash
+    $ valec init
+    ```
+
+2. Store secrets in local file. Values are encrypted.
+
+    ```bash
+    $ valec encrypt AWS_ACCESS_KEY_ID=AKIAxxxx --add production.yaml
+    $ valec encrypt AWS_SECRET_ACCESS_KEY=yyyyyyyy --add production.yaml
+    $ cat production.yaml
+    - key: AWS_SECRET_ACCESS_KEY
+      value: AQECAHi1osu...
+    - key: AWS_ACCESS_KEY_ID
+      value: AQECAHi1osu...
+    ```
+
+3. Save secrets to DynamoDB table.
+
+    ```bash
+    $ valec sync production.yaml
+    No config will be deleted.
+
+    2 configs of production namespace will be added.
+    - AWS_SECRET_ACCESS_KEY
+    - AWS_ACCESS_KEY_ID
+    2 configs of production namespace were successfully added.
+    ```
+
+4. Use stored secrets in your application.
+
+    Use stored secrets directly:
+
+    ```bash
+    $ valec exec bin/server
+    ```
+
+    or use as dotenv:
+
+    ```bash
+    $ valec dump production > .env
+    $ bin/server
+    ```
+
 ## Usage
 
 ### `valec dump`
