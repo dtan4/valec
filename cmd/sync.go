@@ -45,38 +45,40 @@ var syncCmd = &cobra.Command{
 
 		added, deleted := lib.CompareConfigList(srcConfigs, dstConfigs)
 
-		if dryRun {
-			if len(deleted) > 0 {
-				fmt.Printf("[dry-run] %d configs of %q namespace will be deleted,\n", len(deleted), namespace)
-			} else {
-				fmt.Println("[dry-run] No config will be deleted.")
+		if len(deleted) > 0 {
+			fmt.Printf("%d configs of %s namespace will be deleted.\n", len(deleted), namespace)
+			for _, config := range deleted {
+				fmt.Printf("- %s\n", config.Key)
 			}
 
-			if len(added) > 0 {
-				fmt.Printf("[dry-run] %d configs of %q namespace will be added.\n", len(added), namespace)
-			} else {
-				fmt.Println("[dry-run] No config will be added.")
+			if !dryRun {
+				if err := aws.DynamoDB().Delete(tableName, namespace, deleted); err != nil {
+					return errors.Wrapf(err, "Failed to delete configs. namespace=%s", namespace)
+				}
+
+				fmt.Printf("%d configs of %s namespace were successfully deleted.\n", len(deleted), namespace)
 			}
 		} else {
-			if err := aws.DynamoDB().Delete(tableName, namespace, deleted); err != nil {
-				return errors.Wrapf(err, "Failed to delete configs. namespace=%s", namespace)
+			fmt.Println("No config will be deleted.")
+		}
+
+		fmt.Println("")
+
+		if len(added) > 0 {
+			fmt.Printf("%d configs of %s namespace will be added.\n", len(added), namespace)
+			for _, config := range added {
+				fmt.Printf("- %s\n", config.Key)
 			}
 
-			if len(deleted) > 0 {
-				fmt.Printf("%d configs of %q namespace were successfully deleted!\n", len(deleted), namespace)
-			} else {
-				fmt.Println("No config was deleted.")
-			}
+			if !dryRun {
+				if err := aws.DynamoDB().Insert(tableName, namespace, added); err != nil {
+					return errors.Wrapf(err, "Failed to insert configs. namespace=%s", namespace)
+				}
 
-			if err := aws.DynamoDB().Insert(tableName, namespace, added); err != nil {
-				return errors.Wrapf(err, "Failed to insert configs. namespace=%s", namespace)
+				fmt.Printf("%d configs of %s namespace were successfully added.\n", len(added), namespace)
 			}
-
-			if len(added) > 0 {
-				fmt.Printf("%d configs of %q namespace were successfully added!\n", len(added), namespace)
-			} else {
-				fmt.Println("No config was added.")
-			}
+		} else {
+			fmt.Println("No config will be added.")
 		}
 
 		return nil
