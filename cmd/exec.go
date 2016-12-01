@@ -13,7 +13,7 @@ import (
 
 // execCmd represents the exec command
 var execCmd = &cobra.Command{
-	Use:   "exec COMMAND [ARG ...]",
+	Use:   "exec NAMESPACE COMMAND [ARG ...]",
 	Short: "Execute commands using stored secrets",
 	Long: `Execute commands using stored secrets
 
@@ -21,7 +21,7 @@ Stored secrets are consumed as environment variables.
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
-			return errors.New("Please specify namespace.")
+			return errors.New("Please specify namespace and command.")
 		}
 		namespace := args[0]
 
