@@ -1,9 +1,9 @@
 NAME      := valec
-VERSION   := v0.1.0
+VERSION   := v0.1.1
 REVISION  := $(shell git rev-parse --short HEAD)
 
 SRCS      := $(shell find . -name '*.go' -type f)
-LDFLAGS   := -ldflags="-s -w -X \"github.com/dtan4/valec/version.Version=$(VERSION)\" -X \"github.com/dtan4/valec/version.Revision=$(REVISION)\""
+LDFLAGS   := -ldflags="-s -w -X \"github.com/dtan4/valec/version.Version=$(VERSION)\" -X \"github.com/dtan4/valec/version.Revision=$(REVISION)\" -extldflags \"-static\""
 
 DIST_DIRS := find * -type d -exec
 
@@ -32,7 +32,7 @@ clean:
 cross-build:
 	for os in darwin linux windows; do \
 		for arch in amd64 386; do \
-			GOOS=$$os GOARCH=$$arch CGO_ENABLED=0 go build $(LDFLAGS) -o dist/$$os-$$arch/$(NAME); \
+			GOOS=$$os GOARCH=$$arch go build -a -tags netgo -installsuffix netgo $(LDFLAGS) -o dist/$$os-$$arch/$(NAME); \
 		done; \
 	done
 
