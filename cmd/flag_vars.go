@@ -11,5 +11,6 @@ var (
 var (
 	configFile     string
 	dotenvTemplate string
+	dryRun         bool
 	override       bool
 )
