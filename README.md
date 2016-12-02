@@ -170,9 +170,9 @@ fuga
   No config will be added.
 hoge
   No config will be deleted.
-  1 configs of unko namespace will be added.
+  1 configs of hoge namespace will be added.
     + HOGE
-  1 configs of unko namespace were successfully added.
+  1 configs of hoge namespace were successfully added.
 ```
 
 If `--dry-run` flag is given, Valec does not modify DynamoDB table actually. This might be useful for CI use.
@@ -184,7 +184,7 @@ fuga
   No config will be added.
 hoge
   No config will be deleted.
-  1 configs of unko namespace will be added.
+  1 configs of hoge namespace will be added.
     + HOGE
 ```
 
@@ -206,7 +206,7 @@ $ valec validate secrets
 secrets/fuga.yaml
 secrets/hoge.yaml
   Config value is invalid. Please try `valec encrypt`. key=HOGE
-Failed to validate configs. filename=tmp/unko.yaml: Some configs are invalid.
+Failed to validate configs. filename=tmp/hoge.yaml: Some configs are invalid.
 ```
 
 ## Development
