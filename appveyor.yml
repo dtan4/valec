@@ -1,5 +1,6 @@
 platform: x64
 clone_folder: c:\gopath\src\github.com\dtan4\valec
+skip_branch_with_pr: true
 environment:
   GOPATH: c:\gopath
 install:
