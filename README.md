@@ -188,6 +188,27 @@ hoge
     + HOGE
 ```
 
+### `valec validate`
+
+Validate secrets in local files
+
+```bash
+$ valec validate secrets
+secrets/fuga.yaml
+secrets/hoge.yaml
+All configs are valid.
+```
+
+When invalid values exist:
+
+```bash
+$ valec validate secrets
+secrets/fuga.yaml
+secrets/hoge.yaml
+  Config value is invalid. Please try `valec encrypt`. key=HOGE
+Failed to validate configs. filename=tmp/unko.yaml: Some configs are invalid.
+```
+
 ## Development
 
 Retrieve this repository and build using `make`.
