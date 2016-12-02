@@ -1,0 +1,15 @@
+platform: x64
+clone_folder: c:\gopath\src\github.com\dtan4\valec
+environment:
+  GOPATH: c:\gopath
+install:
+  - echo %PATH%
+  - echo %GOPATH%
+  - set PATH=%GOPATH\bin;c:\go\bin;%PATH%
+  - go version
+  - go env
+  - go get github.com/Masterminds/glide
+build: off
+test_script:
+  - for /F "tokens=*" %a in ('glide novendor') do go test -v %a
+deploy: off

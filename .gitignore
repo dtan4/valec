@@ -41,6 +41,7 @@ vendor/
 
 /*.yml
 !/.travis.yml
+!/appveyor.yml
 
 /.env
 
