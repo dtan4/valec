@@ -9,6 +9,7 @@ import (
 
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/lib"
+	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -63,11 +64,13 @@ func syncFile(filename string) error {
 	}
 
 	added, deleted := lib.CompareConfigList(srcConfigs, dstConfigs)
+	red := color.New(color.FgRed)
+	green := color.New(color.FgGreen)
 
 	if len(deleted) > 0 {
 		fmt.Printf("%  d configs of %s namespace will be deleted.\n", len(deleted), namespace)
 		for _, config := range deleted {
-			fmt.Printf("    - %s\n", config.Key)
+			red.Printf("    - %s\n", config.Key)
 		}
 
 		if !dryRun {
@@ -84,7 +87,7 @@ func syncFile(filename string) error {
 	if len(added) > 0 {
 		fmt.Printf("  %d configs of %s namespace will be added.\n", len(added), namespace)
 		for _, config := range added {
-			fmt.Printf("    + %s\n", config.Key)
+			green.Printf("    + %s\n", config.Key)
 		}
 
 		if !dryRun {

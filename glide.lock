@@ -1,8 +1,8 @@
-hash: 41a175f33460d34905167f99ab4969f182d4c1dc3580e5282572e335082b21b8
-updated: 2016-11-24T18:59:43.199276008+09:00
+hash: a5b49a633fd49dc7bcab4a9571e718adcb89df9801620ada098225cb45325ba8
+updated: 2016-12-02T14:58:22.023133762+09:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 4a6ff995f57ee4f8994db17ae83f01a9c9cc2274
+  version: 918c42e2bcdb277aa821401c906e88254501bdf4
   subpackages:
   - aws
   - aws/awserr
@@ -31,8 +31,10 @@ imports:
   - service/dynamodb
   - service/kms
   - service/sts
+- name: github.com/fatih/color
+  version: dea9d3a26a087187530244679c1cfb3a42937794
 - name: github.com/go-ini/ini
-  version: 2ba15ac2dc9cdf88c110ec2dc0ced7fa45f5678c
+  version: 6e4869b434bd001f6983749881c7ead3545887d8
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
@@ -44,5 +46,5 @@ imports:
 - name: github.com/spf13/pflag
   version: 5ccb023bc27df288a957c5e994cd44fd19619465
 - name: gopkg.in/yaml.v2
-  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
+  version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
 testImports: []
