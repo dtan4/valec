@@ -11,5 +11,5 @@ install:
   - go get github.com/Masterminds/glide
 build: off
 test_script:
-  - for /F %a in ('glide novendor') do go test -v %a
+  - FOR /F %%A IN ('glide novendor') DO go test -v %%A || exit /b 1
 deploy: off
