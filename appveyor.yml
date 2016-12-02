@@ -11,5 +11,5 @@ install:
   - go get github.com/Masterminds/glide
 build: off
 test_script:
-  - for /F "tokens=*" %a in ('glide novendor') do go test -v %a
+  - for /F %a in ('glide novendor') do go test -v %~a
 deploy: off
