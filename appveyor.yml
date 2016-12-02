@@ -9,7 +9,9 @@ install:
   - go version
   - go env
   - go get github.com/Masterminds/glide
-build: off
+  - glide install
+build_script:
+  - go build -v
 test_script:
   - FOR /F %%A IN ('glide novendor') DO go test -v %%A || exit /b 1
 deploy: off
