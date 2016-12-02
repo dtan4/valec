@@ -50,6 +50,7 @@ var syncCmd = &cobra.Command{
 
 func syncFile(filename string) error {
 	namespace := yamlExtRegexp.ReplaceAllString(filepath.Base(filename), "")
+	fmt.Println(namespace)
 
 	srcConfigs, err := lib.LoadConfigYAML(filename)
 	if err != nil {
@@ -64,9 +65,9 @@ func syncFile(filename string) error {
 	added, deleted := lib.CompareConfigList(srcConfigs, dstConfigs)
 
 	if len(deleted) > 0 {
-		fmt.Printf("%d configs of %s namespace will be deleted.\n", len(deleted), namespace)
+		fmt.Printf("%  d configs of %s namespace will be deleted.\n", len(deleted), namespace)
 		for _, config := range deleted {
-			fmt.Printf("- %s\n", config.Key)
+			fmt.Printf("    - %s\n", config.Key)
 		}
 
 		if !dryRun {
@@ -74,18 +75,16 @@ func syncFile(filename string) error {
 				return errors.Wrapf(err, "Failed to delete configs. namespace=%s", namespace)
 			}
 
-			fmt.Printf("%d configs of %s namespace were successfully deleted.\n", len(deleted), namespace)
+			fmt.Printf("  %d configs of %s namespace were successfully deleted.\n", len(deleted), namespace)
 		}
 	} else {
-		fmt.Println("No config will be deleted.")
+		fmt.Println("  No config will be deleted.")
 	}
 
-	fmt.Println("")
-
 	if len(added) > 0 {
-		fmt.Printf("%d configs of %s namespace will be added.\n", len(added), namespace)
+		fmt.Printf("  %d configs of %s namespace will be added.\n", len(added), namespace)
 		for _, config := range added {
-			fmt.Printf("- %s\n", config.Key)
+			fmt.Printf("    + %s\n", config.Key)
 		}
 
 		if !dryRun {
@@ -93,10 +92,10 @@ func syncFile(filename string) error {
 				return errors.Wrapf(err, "Failed to insert configs. namespace=%s", namespace)
 			}
 
-			fmt.Printf("%d configs of %s namespace were successfully added.\n", len(added), namespace)
+			fmt.Printf("  %d configs of %s namespace were successfully added.\n", len(added), namespace)
 		}
 	} else {
-		fmt.Println("No config will be added.")
+		fmt.Println("  No config will be added.")
 	}
 
 	return nil
