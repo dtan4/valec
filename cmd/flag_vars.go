@@ -4,6 +4,7 @@ package cmd
 var (
 	debug     bool
 	keyAlias  string
+	noColor   bool
 	tableName string
 )
 

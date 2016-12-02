@@ -70,7 +70,11 @@ func syncFile(filename string) error {
 	if len(deleted) > 0 {
 		fmt.Printf("%  d configs of %s namespace will be deleted.\n", len(deleted), namespace)
 		for _, config := range deleted {
-			red.Printf("    - %s\n", config.Key)
+			if noColor {
+				fmt.Printf("    - %s\n", config.Key)
+			} else {
+				red.Printf("    - %s\n", config.Key)
+			}
 		}
 
 		if !dryRun {
@@ -87,7 +91,11 @@ func syncFile(filename string) error {
 	if len(added) > 0 {
 		fmt.Printf("  %d configs of %s namespace will be added.\n", len(added), namespace)
 		for _, config := range added {
-			green.Printf("    + %s\n", config.Key)
+			if noColor {
+				fmt.Printf("    + %s\n", config.Key)
+			} else {
+				green.Printf("    + %s\n", config.Key)
+			}
 		}
 
 		if !dryRun {
