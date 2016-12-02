@@ -158,23 +158,34 @@ hoge
 
 Synchronize secrets between local file and DynamoDB
 
-```bash
-$ valec sync hoge.yaml
-No config will be deleted.
+Argument must be a directory that contains secret files. `hoge.yaml` will be synchronized to `hoge` namespace.
 
-1 configs of hoge namespace will be added.
-- PPAP
-1 configs of hoge namespace was successfully added.
+```bash
+$ ls secrets
+fuga.yaml       hoge.yaml
+
+$ valec sync secrets
+fuga
+  No config will be deleted.
+  No config will be added.
+hoge
+  No config will be deleted.
+  1 configs of unko namespace will be added.
+    + HOGE
+  1 configs of unko namespace were successfully added.
 ```
 
 If `--dry-run` flag is given, Valec does not modify DynamoDB table actually. This might be useful for CI use.
 
 ```bash
-$ valec sync hoge.yaml --dry-run
-No config will be deleted.
-
-1 configs of hoge namespace will be added.
-- PPAP
+$ valec sync configs --dry-run
+fuga
+  No config will be deleted.
+  No config will be added.
+hoge
+  No config will be deleted.
+  1 configs of unko namespace will be added.
+    + HOGE
 ```
 
 ## Development
