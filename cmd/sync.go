@@ -2,11 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/lib"
+	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -17,72 +20,96 @@ var (
 
 // syncCmd represents the sync command
 var syncCmd = &cobra.Command{
-	Use:   "sync CONFIGFILE [NAMESPACE]",
+	Use:   "sync CONFIGDIR [NAMESPACE]",
 	Short: "Synchronize secrets between local file and DynamoDB",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return errors.New("Please specify config file.")
 		}
-		filename := args[0]
+		dirname := args[0]
 
-		srcConfigs, err := lib.LoadConfigYAML(filename)
+		files, err := ioutil.ReadDir(dirname)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to load configs. filename=%s", filename)
+			return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
 		}
 
-		var namespace string
-
-		if len(args) == 1 {
-			namespace = yamlExtRegexp.ReplaceAllString(filepath.Base(filename), "")
-		} else {
-			namespace = args[1]
-		}
-
-		dstConfigs, err := aws.DynamoDB().ListConfigs(tableName, namespace)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to retrieve configs. namespace=%s", namespace)
-		}
-
-		added, deleted := lib.CompareConfigList(srcConfigs, dstConfigs)
-
-		if len(deleted) > 0 {
-			fmt.Printf("%d configs of %s namespace will be deleted.\n", len(deleted), namespace)
-			for _, config := range deleted {
-				fmt.Printf("- %s\n", config.Key)
+		for _, file := range files {
+			if strings.HasPrefix(file.Name(), ".") || !yamlExtRegexp.Match([]byte(file.Name())) {
+				continue
 			}
 
-			if !dryRun {
-				if err := aws.DynamoDB().Delete(tableName, namespace, deleted); err != nil {
-					return errors.Wrapf(err, "Failed to delete configs. namespace=%s", namespace)
-				}
+			filename := filepath.Join(dirname, file.Name())
 
-				fmt.Printf("%d configs of %s namespace were successfully deleted.\n", len(deleted), namespace)
+			if err := syncFile(filename); err != nil {
+				return errors.Wrapf(err, "Failed to synchronize configs. filename=%s", filename)
 			}
-		} else {
-			fmt.Println("No config will be deleted.")
-		}
-
-		fmt.Println("")
-
-		if len(added) > 0 {
-			fmt.Printf("%d configs of %s namespace will be added.\n", len(added), namespace)
-			for _, config := range added {
-				fmt.Printf("- %s\n", config.Key)
-			}
-
-			if !dryRun {
-				if err := aws.DynamoDB().Insert(tableName, namespace, added); err != nil {
-					return errors.Wrapf(err, "Failed to insert configs. namespace=%s", namespace)
-				}
-
-				fmt.Printf("%d configs of %s namespace were successfully added.\n", len(added), namespace)
-			}
-		} else {
-			fmt.Println("No config will be added.")
 		}
 
 		return nil
 	},
+}
+
+func syncFile(filename string) error {
+	namespace := yamlExtRegexp.ReplaceAllString(filepath.Base(filename), "")
+	fmt.Println(namespace)
+
+	srcConfigs, err := lib.LoadConfigYAML(filename)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to load configs. filename=%s", filename)
+	}
+
+	dstConfigs, err := aws.DynamoDB().ListConfigs(tableName, namespace)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to retrieve configs. namespace=%s", namespace)
+	}
+
+	added, deleted := lib.CompareConfigList(srcConfigs, dstConfigs)
+	red := color.New(color.FgRed)
+	green := color.New(color.FgGreen)
+
+	if len(deleted) > 0 {
+		fmt.Printf("%  d configs of %s namespace will be deleted.\n", len(deleted), namespace)
+		for _, config := range deleted {
+			if noColor {
+				fmt.Printf("    - %s\n", config.Key)
+			} else {
+				red.Printf("    - %s\n", config.Key)
+			}
+		}
+
+		if !dryRun {
+			if err := aws.DynamoDB().Delete(tableName, namespace, deleted); err != nil {
+				return errors.Wrapf(err, "Failed to delete configs. namespace=%s", namespace)
+			}
+
+			fmt.Printf("  %d configs of %s namespace were successfully deleted.\n", len(deleted), namespace)
+		}
+	} else {
+		fmt.Println("  No config will be deleted.")
+	}
+
+	if len(added) > 0 {
+		fmt.Printf("  %d configs of %s namespace will be added.\n", len(added), namespace)
+		for _, config := range added {
+			if noColor {
+				fmt.Printf("    + %s\n", config.Key)
+			} else {
+				green.Printf("    + %s\n", config.Key)
+			}
+		}
+
+		if !dryRun {
+			if err := aws.DynamoDB().Insert(tableName, namespace, added); err != nil {
+				return errors.Wrapf(err, "Failed to insert configs. namespace=%s", namespace)
+			}
+
+			fmt.Printf("  %d configs of %s namespace were successfully added.\n", len(added), namespace)
+		}
+	} else {
+		fmt.Println("  No config will be added.")
+	}
+
+	return nil
 }
 
 func init() {

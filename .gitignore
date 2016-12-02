@@ -36,12 +36,7 @@ vendor/
 /bin
 /dist
 
-/*.yaml
-!/glide.yaml
-
-/*.yml
-!/.travis.yml
-!/appveyor.yml
+/tmp
 
 /.env
 
