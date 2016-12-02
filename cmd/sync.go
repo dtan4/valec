@@ -24,7 +24,7 @@ var syncCmd = &cobra.Command{
 	Short: "Synchronize secrets between local file and DynamoDB",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("Please specify config file.")
+			return errors.New("Please specify config directory.")
 		}
 		dirname := args[0]
 
