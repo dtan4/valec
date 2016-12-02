@@ -25,15 +25,7 @@ var syncCmd = &cobra.Command{
 		}
 		filename := args[0]
 
-		var namespace string
-
-		if len(args) == 1 {
-			namespace = yamlExtRegexp.ReplaceAllString(filepath.Base(filename), "")
-		} else {
-			namespace = args[1]
-		}
-
-		if err := syncFile(filename, namespace); err != nil {
+		if err := syncFile(filename); err != nil {
 			return errors.Wrapf(err, "Failed to synchronize configs. filename=%s", filename)
 		}
 
@@ -41,7 +33,9 @@ var syncCmd = &cobra.Command{
 	},
 }
 
-func syncFile(filename, namespace string) error {
+func syncFile(filename string) error {
+	namespace := yamlExtRegexp.ReplaceAllString(filepath.Base(filename), "")
+
 	srcConfigs, err := lib.LoadConfigYAML(filename)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to load configs. filename=%s", filename)
