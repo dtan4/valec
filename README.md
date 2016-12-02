@@ -1,6 +1,7 @@
 # Valec
 
 [![Build Status](https://travis-ci.org/dtan4/valec.svg?branch=master)](https://travis-ci.org/dtan4/valec)
+[![Build status](https://ci.appveyor.com/api/projects/status/5re33kx1xwqgeswi/branch/master?svg=true)](https://ci.appveyor.com/project/dtan4/valec/branch/master)
 [![codecov](https://codecov.io/gh/dtan4/valec/branch/master/graph/badge.svg)](https://codecov.io/gh/dtan4/valec)
 [![GitHub release](https://img.shields.io/github/release/dtan4/valec.svg)](https://github.com/dtan4/valec/releases)
 
