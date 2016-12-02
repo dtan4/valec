@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/lib"
@@ -17,16 +19,29 @@ var (
 
 // syncCmd represents the sync command
 var syncCmd = &cobra.Command{
-	Use:   "sync CONFIGFILE [NAMESPACE]",
+	Use:   "sync CONFIGDIR [NAMESPACE]",
 	Short: "Synchronize secrets between local file and DynamoDB",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return errors.New("Please specify config file.")
 		}
-		filename := args[0]
+		dirname := args[0]
 
-		if err := syncFile(filename); err != nil {
-			return errors.Wrapf(err, "Failed to synchronize configs. filename=%s", filename)
+		files, err := ioutil.ReadDir(dirname)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
+		}
+
+		for _, file := range files {
+			if strings.HasPrefix(file.Name(), ".") || !yamlExtRegexp.Match([]byte(file.Name())) {
+				continue
+			}
+
+			filename := filepath.Join(dirname, file.Name())
+
+			if err := syncFile(filename); err != nil {
+				return errors.Wrapf(err, "Failed to synchronize configs. filename=%s", filename)
+			}
 		}
 
 		return nil
