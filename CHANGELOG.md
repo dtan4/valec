@@ -1,3 +1,9 @@
+# [v0.2.1](https://github.com/dtan4/s3url/releases/tag/v0.2.1) (2016-12-05)
+
+## Features
+
+- Add `--region` flag to specify AWS region [#16](https://github.com/dtan4/valec/pull/16), [#17](https://github.com/dtan4/valec/pull/17)
+
 # [v0.2.0](https://github.com/dtan4/s3url/releases/tag/v0.2.0) (2016-12-02)
 
 ## Backward incompatible changes
