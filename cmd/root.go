@@ -53,7 +53,7 @@ func init() {
 
 	RootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Debug mode")
 	RootCmd.PersistentFlags().StringVar(&keyAlias, "key", defaultKeyAlias, "KMS key alias")
-	RootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable colorize output")
+	RootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable colorized output")
 	RootCmd.PersistentFlags().StringVar(&tableName, "table-name", defaultTableName, "DynamoDB table name")
 	RootCmd.PersistentFlags().StringVar(&region, "region", "", "AWS region")
 }

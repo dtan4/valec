@@ -209,6 +209,16 @@ secrets/hoge.yaml
 Failed to validate configs. filename=tmp/hoge.yaml: Some configs are invalid.
 ```
 
+### Common flags
+
+|Flag|Description|Default|
+|---|---|---|
+|`--debug`|Debug mode|`false`|
+|`--key KEY`|KMS key alias|`valec`|
+|`--no-color`|Disable colorized output|`false`|
+|`--table-name`|DynamoDB table name|`valec`|
+|`--region`|AWS Region|(empty)|
+
 ## Development
 
 Retrieve this repository and build using `make`.
