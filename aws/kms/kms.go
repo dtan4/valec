@@ -4,26 +4,26 @@ import (
 	"encoding/base64"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go/service/kms/kmsiface"
 	"github.com/pkg/errors"
 )
 
 // Client represents the wrapper of KMS API client
 type Client struct {
-	client *kms.KMS
+	api kmsiface.KMSAPI
 }
 
 // NewClient creates new Client object
-func NewClient() *Client {
+func NewClient(api kmsiface.KMSAPI) *Client {
 	return &Client{
-		client: kms.New(session.New(), &aws.Config{}),
+		api: api,
 	}
 }
 
 // CreateKey creates new key and returns key ID
 func (c *Client) CreateKey() (string, error) {
-	resp, err := c.client.CreateKey(&kms.CreateKeyInput{
+	resp, err := c.api.CreateKey(&kms.CreateKeyInput{
 		Description: aws.String("Key for Valec"),
 	})
 	if err != nil {
@@ -35,7 +35,7 @@ func (c *Client) CreateKey() (string, error) {
 
 // CreateKeyAlias attaches key alias to the given key
 func (c *Client) CreateKeyAlias(keyID, keyAlias string) error {
-	_, err := c.client.CreateAlias(&kms.CreateAliasInput{
+	_, err := c.api.CreateAlias(&kms.CreateAliasInput{
 		AliasName:   aws.String(keyAliasWithPrefix(keyAlias)),
 		TargetKeyId: aws.String(keyID),
 	})
@@ -53,7 +53,7 @@ func (c *Client) DecryptBase64(key, cipherText string) (string, error) {
 		return "", errors.Wrapf(err, "Failed to decode as base64 string. text=%q", cipherText)
 	}
 
-	resp, err := c.client.Decrypt(&kms.DecryptInput{
+	resp, err := c.api.Decrypt(&kms.DecryptInput{
 		CiphertextBlob: decoded,
 		EncryptionContext: map[string]*string{
 			"key": aws.String(key),
@@ -68,7 +68,7 @@ func (c *Client) DecryptBase64(key, cipherText string) (string, error) {
 
 // EncryptBase64 encrypts the given text and return as base64-encoded cipher text
 func (c *Client) EncryptBase64(keyAlias, key, text string) (string, error) {
-	resp, err := c.client.Encrypt(&kms.EncryptInput{
+	resp, err := c.api.Encrypt(&kms.EncryptInput{
 
 		KeyId:     aws.String(keyAliasWithPrefix(keyAlias)),
 		Plaintext: []byte(text),
@@ -85,7 +85,7 @@ func (c *Client) EncryptBase64(keyAlias, key, text string) (string, error) {
 
 // KeyExists checks whether the given key exists or not
 func (c *Client) KeyExists(keyAlias string) (bool, error) {
-	resp, err := c.client.ListAliases(&kms.ListAliasesInput{})
+	resp, err := c.api.ListAliases(&kms.ListAliasesInput{})
 	if err != nil {
 		return false, errors.Wrap(err, "Failed to retrieve key aliases.")
 	}
