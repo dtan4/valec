@@ -8,6 +8,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	includeKey = ".include"
+)
+
 // Client represents the wrapper of DynamoDB API client
 type Client struct {
 	api dynamodbiface.DynamoDBAPI
@@ -137,6 +141,8 @@ func (c *Client) Insert(table, namespace string, configs []*lib.Config) error {
 	return nil
 }
 
+var included = map[string]bool{}
+
 // ListConfigs returns all configs in the given table and namespace
 func (c *Client) ListConfigs(table, namespace string) ([]*lib.Config, error) {
 	keyConditions := map[string]*dynamodb.Condition{
@@ -163,12 +169,30 @@ func (c *Client) ListConfigs(table, namespace string) ([]*lib.Config, error) {
 	var config *lib.Config
 
 	for _, item := range resp.Items {
-		config = &lib.Config{
-			Key:   *item["key"].S,
-			Value: *item["value"].S,
-		}
+		if *item["key"].S == includeKey {
+			includeNamespace := *item["value"].S
 
-		configs = append(configs, config)
+			if included[includeNamespace] {
+				return []*lib.Config{}, errors.Errorf("Circular includes has detected. sourceNamespace=%s, includeNamespace=%s", namespace, includeNamespace)
+			}
+			included[includeNamespace] = true
+
+			includeConfigs, err := c.ListConfigs(table, includeNamespace)
+			if err != nil {
+				return []*lib.Config{}, errors.Wrapf(err, "Failed to include another namespace. sourceNamespace=%s, includeNamespace=%s", namespace, includeNamespace)
+			}
+
+			for _, config := range includeConfigs {
+				configs = append(configs, config)
+			}
+		} else {
+			config = &lib.Config{
+				Key:   *item["key"].S,
+				Value: *item["value"].S,
+			}
+
+			configs = append(configs, config)
+		}
 	}
 
 	return configs, nil
