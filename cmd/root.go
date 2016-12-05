@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/dtan4/valec/aws"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -21,6 +22,13 @@ var RootCmd = &cobra.Command{
 	Short:         "Handle application secrets securely",
 	Long: `Valec is a CLI tool to handle application secrets securely using AWS DynamoDB and KMS.
 Valec enables you to manage application secrets in your favorite VCS.`,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if err := aws.Initialize(region); err != nil {
+			return errors.Wrap(err, "Failed to initialize AWS API clients.")
+		}
+
+		return nil
+	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
@@ -29,15 +37,6 @@ Valec enables you to manage application secrets in your favorite VCS.`,
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	if err := aws.Initialize(region); err != nil {
-		if debug {
-			fmt.Printf("%+v\n", err)
-		} else {
-			fmt.Println(err)
-		}
-		os.Exit(-1)
-	}
-
 	if err := RootCmd.Execute(); err != nil {
 		if debug {
 			fmt.Printf("%+v\n", err)
