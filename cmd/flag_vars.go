@@ -6,6 +6,7 @@ var (
 	keyAlias  string
 	noColor   bool
 	tableName string
+	region    string
 )
 
 // command-specific flag variable
