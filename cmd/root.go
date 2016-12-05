@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/dtan4/valec/aws"
 	"github.com/spf13/cobra"
 )
 
@@ -28,6 +29,15 @@ Valec enables you to manage application secrets in your favorite VCS.`,
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	if err := aws.Initialize(region); err != nil {
+		if debug {
+			fmt.Printf("%+v\n", err)
+		} else {
+			fmt.Println(err)
+		}
+		os.Exit(-1)
+	}
+
 	if err := RootCmd.Execute(); err != nil {
 		if debug {
 			fmt.Printf("%+v\n", err)
@@ -43,8 +53,9 @@ func init() {
 
 	RootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Debug mode")
 	RootCmd.PersistentFlags().StringVar(&keyAlias, "key", defaultKeyAlias, "KMS key alias")
-	RootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable colorize output")
+	RootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable colorized output")
 	RootCmd.PersistentFlags().StringVar(&tableName, "table-name", defaultTableName, "DynamoDB table name")
+	RootCmd.PersistentFlags().StringVar(&region, "region", "", "AWS region")
 }
 
 // initConfig reads in config file and ENV variables if set.

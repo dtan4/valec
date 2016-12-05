@@ -2,27 +2,27 @@ package dynamodb
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/dtan4/valec/lib"
 	"github.com/pkg/errors"
 )
 
 // Client represents the wrapper of DynamoDB API client
 type Client struct {
-	client *dynamodb.DynamoDB
+	api dynamodbiface.DynamoDBAPI
 }
 
 // NewClient creates new Client object
-func NewClient() *Client {
+func NewClient(api dynamodbiface.DynamoDBAPI) *Client {
 	return &Client{
-		client: dynamodb.New(session.New(), &aws.Config{}),
+		api: api,
 	}
 }
 
 // CreateTable creates new table for Valec
 func (c *Client) CreateTable(table string) error {
-	_, err := c.client.CreateTable(&dynamodb.CreateTableInput{
+	_, err := c.api.CreateTable(&dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			&dynamodb.AttributeDefinition{
 				AttributeName: aws.String("namespace"),
@@ -85,7 +85,7 @@ func (c *Client) Delete(table, namespace string, configs []*lib.Config) error {
 	requestItems := make(map[string][]*dynamodb.WriteRequest)
 	requestItems[table] = writeRequests
 
-	_, err := c.client.BatchWriteItem(&dynamodb.BatchWriteItemInput{
+	_, err := c.api.BatchWriteItem(&dynamodb.BatchWriteItemInput{
 		RequestItems: requestItems,
 	})
 	if err != nil {
@@ -127,7 +127,7 @@ func (c *Client) Insert(table, namespace string, configs []*lib.Config) error {
 	requestItems := make(map[string][]*dynamodb.WriteRequest)
 	requestItems[table] = writeRequests
 
-	_, err := c.client.BatchWriteItem(&dynamodb.BatchWriteItemInput{
+	_, err := c.api.BatchWriteItem(&dynamodb.BatchWriteItemInput{
 		RequestItems: requestItems,
 	})
 	if err != nil {
@@ -154,7 +154,7 @@ func (c *Client) ListConfigs(table, namespace string) ([]*lib.Config, error) {
 		KeyConditions: keyConditions,
 	}
 
-	resp, err := c.client.Query(params)
+	resp, err := c.api.Query(params)
 	if err != nil {
 		return []*lib.Config{}, errors.Wrapf(err, "Failed to list up configs. namespace=%s", namespace)
 	}
@@ -176,7 +176,7 @@ func (c *Client) ListConfigs(table, namespace string) ([]*lib.Config, error) {
 
 // ListNamespaces returns all namespaces
 func (c *Client) ListNamespaces(table string) ([]string, error) {
-	resp, err := c.client.Scan(&dynamodb.ScanInput{
+	resp, err := c.api.Scan(&dynamodb.ScanInput{
 		TableName: aws.String(table),
 	})
 	if err != nil {
@@ -200,7 +200,7 @@ func (c *Client) ListNamespaces(table string) ([]string, error) {
 
 // TableExists check whether the given table exists or not
 func (c *Client) TableExists(table string) (bool, error) {
-	resp, err := c.client.ListTables(&dynamodb.ListTablesInput{})
+	resp, err := c.api.ListTables(&dynamodb.ListTablesInput{})
 	if err != nil {
 		return false, errors.Wrap(err, "Failed to retrieve DynamoDB tables.")
 	}

@@ -22,7 +22,7 @@ var dumpCmd = &cobra.Command{
 		}
 		namespace := args[0]
 
-		configs, err := aws.DynamoDB().ListConfigs(tableName, namespace)
+		configs, err := aws.DynamoDB.ListConfigs(tableName, namespace)
 		if err != nil {
 			return errors.Wrap(err, "Failed to retrieve configs.")
 		}
@@ -43,7 +43,7 @@ var dumpCmd = &cobra.Command{
 
 func dumpAll(configs []*lib.Config) error {
 	for _, config := range configs {
-		plainValue, err := aws.KMS().DecryptBase64(config.Key, config.Value)
+		plainValue, err := aws.KMS.DecryptBase64(config.Key, config.Value)
 		if err != nil {
 			return errors.Wrap(err, "Failed to decrypt value.")
 		}
@@ -83,7 +83,7 @@ func dumpWithTemplate(configs []*lib.Config) error {
 		if override || value == "" {
 			v, ok := configMap[key]
 			if ok {
-				plainValue, err := aws.KMS().DecryptBase64(key, v)
+				plainValue, err := aws.KMS.DecryptBase64(key, v)
 				if err != nil {
 					return errors.Wrap(err, "Failed to decrypt value.")
 				}
