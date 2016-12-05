@@ -27,7 +27,7 @@ var encryptCmd = &cobra.Command{
 		}
 		key, value := ss[0], ss[1]
 
-		cipherText, err := aws.KMS().EncryptBase64(keyAlias, key, value)
+		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to encrypt.")
 		}

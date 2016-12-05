@@ -25,7 +25,7 @@ Stored secrets are consumed as environment variables.
 		}
 		namespace := args[0]
 
-		configs, err := aws.DynamoDB().ListConfigs(tableName, namespace)
+		configs, err := aws.DynamoDB.ListConfigs(tableName, namespace)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to load configs from DynamoDB. namespace=%s", namespace)
 		}
@@ -33,7 +33,7 @@ Stored secrets are consumed as environment variables.
 		envs := os.Environ()
 
 		for _, config := range configs {
-			plainValue, err := aws.KMS().DecryptBase64(config.Key, config.Value)
+			plainValue, err := aws.KMS.DecryptBase64(config.Key, config.Value)
 			if err != nil {
 				return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", config.Key, config.Value)
 			}

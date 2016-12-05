@@ -58,7 +58,7 @@ func validateFile(filename string) error {
 	red := color.New(color.FgRed)
 
 	for _, config := range configs {
-		if _, err := aws.KMS().DecryptBase64(config.Key, config.Value); err != nil {
+		if _, err := aws.KMS.DecryptBase64(config.Key, config.Value); err != nil {
 			red.Printf("  Config value is invalid. Please try `valec encrypt`. key=%s\n", config.Key)
 			hasError = true
 		}

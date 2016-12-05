@@ -58,7 +58,7 @@ func syncFile(filename string) error {
 		return errors.Wrapf(err, "Failed to load configs. filename=%s", filename)
 	}
 
-	dstConfigs, err := aws.DynamoDB().ListConfigs(tableName, namespace)
+	dstConfigs, err := aws.DynamoDB.ListConfigs(tableName, namespace)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to retrieve configs. namespace=%s", namespace)
 	}
@@ -78,7 +78,7 @@ func syncFile(filename string) error {
 		}
 
 		if !dryRun {
-			if err := aws.DynamoDB().Delete(tableName, namespace, deleted); err != nil {
+			if err := aws.DynamoDB.Delete(tableName, namespace, deleted); err != nil {
 				return errors.Wrapf(err, "Failed to delete configs. namespace=%s", namespace)
 			}
 
@@ -99,7 +99,7 @@ func syncFile(filename string) error {
 		}
 
 		if !dryRun {
-			if err := aws.DynamoDB().Insert(tableName, namespace, added); err != nil {
+			if err := aws.DynamoDB.Insert(tableName, namespace, added); err != nil {
 				return errors.Wrapf(err, "Failed to insert configs. namespace=%s", namespace)
 			}
 

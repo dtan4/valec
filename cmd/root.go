@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/dtan4/valec/aws"
 	"github.com/spf13/cobra"
 )
 
@@ -28,6 +29,15 @@ Valec enables you to manage application secrets in your favorite VCS.`,
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	if err := aws.Initialize(region); err != nil {
+		if debug {
+			fmt.Printf("%+v\n", err)
+		} else {
+			fmt.Println(err)
+		}
+		os.Exit(-1)
+	}
+
 	if err := RootCmd.Execute(); err != nil {
 		if debug {
 			fmt.Printf("%+v\n", err)

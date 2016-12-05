@@ -33,7 +33,7 @@ Encrypted values are decrypted and printed as plain text.`,
 			}
 			namespace := args[0]
 
-			configs, err = aws.DynamoDB().ListConfigs(tableName, namespace)
+			configs, err = aws.DynamoDB.ListConfigs(tableName, namespace)
 			if err != nil {
 				return errors.Wrapf(err, "Failed to load configs from DynamoDB. namespace=%s", namespace)
 			}
@@ -47,7 +47,7 @@ Encrypted values are decrypted and printed as plain text.`,
 		longestLength := longestKeyLength(configs)
 
 		for _, config := range configs {
-			plainValue, err := aws.KMS().DecryptBase64(config.Key, config.Value)
+			plainValue, err := aws.KMS.DecryptBase64(config.Key, config.Value)
 			if err != nil {
 				return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", config.Key, config.Value)
 			}
