@@ -28,30 +28,61 @@ var syncCmd = &cobra.Command{
 		}
 		dirname := args[0]
 
-		files, err := ioutil.ReadDir(dirname)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
-		}
-
-		for _, file := range files {
-			if strings.HasPrefix(file.Name(), ".") || !yamlExtRegexp.Match([]byte(file.Name())) {
-				continue
-			}
-
-			filename := filepath.Join(dirname, file.Name())
-
-			if err := syncFile(filename); err != nil {
-				return errors.Wrapf(err, "Failed to synchronize configs. filename=%s", filename)
-			}
+		if err := walkDir(dirname, ""); err != nil {
+			return errors.Wrapf(err, "Failed to parse directory. dirname=%s", dirname)
 		}
 
 		return nil
 	},
 }
 
-func syncFile(filename string) error {
-	namespace := yamlExtRegexp.ReplaceAllString(filepath.Base(filename), "")
-	fmt.Println(namespace)
+func walkDir(dirname, parentNamespace string) error {
+	files, err := ioutil.ReadDir(dirname)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to open directory. dirname=%s", dirname)
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			subdirname := filepath.Join(dirname, file.Name())
+
+			if err := walkDir(subdirname, file.Name()); err != nil {
+				return errors.Wrapf(err, "Failed to parse directory. dirname=%s", subdirname)
+			}
+
+			continue
+		}
+
+		if strings.HasPrefix(file.Name(), ".") || !yamlExtRegexp.Match([]byte(file.Name())) {
+			continue
+		}
+
+		filename := filepath.Join(dirname, file.Name())
+
+		if err := syncFile(filename, parentNamespace); err != nil {
+			return errors.Wrapf(err, "Failed to synchronize configs. filename=%s", filename)
+		}
+	}
+
+	return nil
+}
+
+func syncFile(filename, parentNamespace string) error {
+	namespaceBase := yamlExtRegexp.ReplaceAllString(filepath.Base(filename), "")
+
+	var namespace string
+
+	if parentNamespace == "" {
+		namespace = namespaceBase
+	} else {
+		namespace = parentNamespace + "/" + namespaceBase
+	}
+
+	if noColor {
+		fmt.Println(namespace)
+	} else {
+		color.New(color.Bold).Println(namespace)
+	}
 
 	srcConfigs, err := lib.LoadConfigYAML(filename)
 	if err != nil {
@@ -68,7 +99,7 @@ func syncFile(filename string) error {
 	green := color.New(color.FgGreen)
 
 	if len(deleted) > 0 {
-		fmt.Printf("%  d configs of %s namespace will be deleted.\n", len(deleted), namespace)
+		fmt.Printf("%  d configs will be deleted.\n", len(deleted))
 		for _, config := range deleted {
 			if noColor {
 				fmt.Printf("    - %s\n", config.Key)
@@ -82,14 +113,14 @@ func syncFile(filename string) error {
 				return errors.Wrapf(err, "Failed to delete configs. namespace=%s", namespace)
 			}
 
-			fmt.Printf("  %d configs of %s namespace were successfully deleted.\n", len(deleted), namespace)
+			fmt.Printf("  %d configs were successfully deleted.\n", len(deleted))
 		}
 	} else {
 		fmt.Println("  No config will be deleted.")
 	}
 
 	if len(added) > 0 {
-		fmt.Printf("  %d configs of %s namespace will be added.\n", len(added), namespace)
+		fmt.Printf("  %d configs will be added.\n", len(added))
 		for _, config := range added {
 			if noColor {
 				fmt.Printf("    + %s\n", config.Key)
@@ -100,10 +131,10 @@ func syncFile(filename string) error {
 
 		if !dryRun {
 			if err := aws.DynamoDB.Insert(tableName, namespace, added); err != nil {
-				return errors.Wrapf(err, "Failed to insert configs. namespace=%s", namespace)
+				return errors.Wrapf(err, "Failed to insert configs. namespace=%s")
 			}
 
-			fmt.Printf("  %d configs of %s namespace were successfully added.\n", len(added), namespace)
+			fmt.Printf("  %d configs were successfully added.\n", len(added))
 		}
 	} else {
 		fmt.Println("  No config will be added.")
