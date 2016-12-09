@@ -62,8 +62,8 @@ func LoadFromYAML(filename string) ([]*Secret, error) {
 	return secrets, nil
 }
 
-// MapToSecrets converts map to secret list
-func MapToSecrets(secretMap map[string]string) []*Secret {
+// MapToList converts map to secret list
+func MapToList(secretMap map[string]string) []*Secret {
 	secrets := []*Secret{}
 
 	for key, value := range secretMap {

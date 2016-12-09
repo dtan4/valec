@@ -199,7 +199,7 @@ func testdataPath(name string) string {
 	return filepath.Join("..", "testdata", name)
 }
 
-func TestMapToSecrets(t *testing.T) {
+func TestMapToList(t *testing.T) {
 	secretMap := map[string]string{
 		"FOO":  "bar",
 		"BAZ":  "1",
@@ -220,7 +220,7 @@ func TestMapToSecrets(t *testing.T) {
 		},
 	}
 
-	secrets := MapToSecrets(secretMap)
+	secrets := MapToList(secretMap)
 
 	if !reflect.DeepEqual(secrets, expected) {
 		t.Errorf("Secret list does not match. expected: %q, actual:%q", expected, secrets)

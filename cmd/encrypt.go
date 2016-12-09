@@ -47,7 +47,7 @@ var encryptCmd = &cobra.Command{
 			}
 
 			secretMap[key] = cipherText
-			newSecrets := secret.MapToSecrets(secretMap)
+			newSecrets := secret.MapToList(secretMap)
 
 			if err := secret.SaveAsYAML(newSecrets, secretFile); err != nil {
 				return errors.Wrapf(err, "Failed to update local secret file. filename=%s", secretFile)
