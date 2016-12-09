@@ -38,7 +38,7 @@ Encrypted values are decrypted and printed as plain text.`,
 				return errors.Wrapf(err, "Failed to load secrets from DynamoDB. namespace=%s", namespace)
 			}
 		} else {
-			secrets, err = secret.LoadSecretYAML(secretFile)
+			secrets, err = secret.LoadFromYAML(secretFile)
 			if err != nil {
 				return errors.Wrapf(err, "Failed to load secrets from file. filename=%s", secretFile)
 			}

@@ -38,7 +38,7 @@ var encryptCmd = &cobra.Command{
 			secretMap := map[string]string{}
 
 			if _, err := os.Stat(secretFile); err == nil {
-				secrets, err2 := secret.LoadSecretYAML(secretFile)
+				secrets, err2 := secret.LoadFromYAML(secretFile)
 				if err2 != nil {
 					return errors.Wrapf(err2, "Failed to load local secret file. filename=%s", secretFile)
 				}

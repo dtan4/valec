@@ -108,9 +108,9 @@ func stringifySecretList(secrets []*Secret) string {
 	return fmt.Sprintf("[%s]", strings.Join(ss, ", "))
 }
 
-func TestLoadSecretFromYAML_valid(t *testing.T) {
+func TestLoadFromFromYAML_valid(t *testing.T) {
 	filepath := testdataPath("test_valid.yaml")
-	secrets, err := LoadSecretYAML(filepath)
+	secrets, err := LoadFromYAML(filepath)
 	if err != nil {
 		t.Fatalf("Error should not be raised. error: %s", err)
 	}
@@ -167,9 +167,9 @@ func TestListToMap(t *testing.T) {
 	}
 }
 
-func TestLoadSecretFromYAML_invalid(t *testing.T) {
+func TestLoadFromFromYAML_invalid(t *testing.T) {
 	filepath := testdataPath("test_invalid.yaml")
-	_, err := LoadSecretYAML(filepath)
+	_, err := LoadFromYAML(filepath)
 	if err == nil {
 		t.Fatalf("Error should be raised. error: %s", err)
 	}
@@ -181,9 +181,9 @@ func TestLoadSecretFromYAML_invalid(t *testing.T) {
 	}
 }
 
-func TestLoadSecretFromYAML_notexist(t *testing.T) {
+func TestLoadFromFromYAML_notexist(t *testing.T) {
 	filepath := testdataPath("test_notexist.yaml")
-	_, err := LoadSecretYAML(filepath)
+	_, err := LoadFromYAML(filepath)
 	if err == nil {
 		t.Fatalf("Error should be raised. error: %s", err)
 	}

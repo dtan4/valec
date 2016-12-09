@@ -84,7 +84,7 @@ func syncFile(filename, parentNamespace string) error {
 		color.New(color.Bold).Println(namespace)
 	}
 
-	srcSecrets, err := secret.LoadSecretYAML(filename)
+	srcSecrets, err := secret.LoadFromYAML(filename)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to load secrets. filename=%s", filename)
 	}

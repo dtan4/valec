@@ -46,8 +46,8 @@ func ListToMap(secrets []*Secret) map[string]string {
 	return secretMap
 }
 
-// LoadSecretYAML loads secrets from the given YAML file
-func LoadSecretYAML(filename string) ([]*Secret, error) {
+// LoadFromYAML loads secrets from the given YAML file
+func LoadFromYAML(filename string) ([]*Secret, error) {
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return []*Secret{}, errors.Wrapf(err, "Failed to read secret file. filename=%s", filename)

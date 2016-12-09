@@ -49,7 +49,7 @@ var validateCmd = &cobra.Command{
 func validateFile(filename string) error {
 	fmt.Println(filename)
 
-	secrets, err := secret.LoadSecretYAML(filename)
+	secrets, err := secret.LoadFromYAML(filename)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to load secrets. filename=%s", filename)
 	}
