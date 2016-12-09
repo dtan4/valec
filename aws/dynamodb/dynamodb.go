@@ -4,7 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	"github.com/dtan4/valec/lib"
+	"github.com/dtan4/valec/secret"
 	"github.com/pkg/errors"
 )
 
@@ -57,8 +57,8 @@ func (c *Client) CreateTable(table string) error {
 }
 
 // Delete deletes records from DynamoDB table
-func (c *Client) Delete(table, namespace string, configs []*lib.Config) error {
-	if len(configs) == 0 {
+func (c *Client) Delete(table, namespace string, secrets []*secret.Secret) error {
+	if len(secrets) == 0 {
 		return nil
 	}
 
@@ -66,7 +66,7 @@ func (c *Client) Delete(table, namespace string, configs []*lib.Config) error {
 
 	var writeRequest *dynamodb.WriteRequest
 
-	for _, config := range configs {
+	for _, secret := range secrets {
 		writeRequest = &dynamodb.WriteRequest{
 			DeleteRequest: &dynamodb.DeleteRequest{
 				Key: map[string]*dynamodb.AttributeValue{
@@ -74,7 +74,7 @@ func (c *Client) Delete(table, namespace string, configs []*lib.Config) error {
 						S: aws.String(namespace),
 					},
 					"key": &dynamodb.AttributeValue{
-						S: aws.String(config.Key),
+						S: aws.String(secret.Key),
 					},
 				},
 			},
@@ -95,9 +95,9 @@ func (c *Client) Delete(table, namespace string, configs []*lib.Config) error {
 	return nil
 }
 
-// Insert creates / updates records of configs in DynamoDB table
-func (c *Client) Insert(table, namespace string, configs []*lib.Config) error {
-	if len(configs) == 0 {
+// Insert creates / updates records of secrets in DynamoDB table
+func (c *Client) Insert(table, namespace string, secrets []*secret.Secret) error {
+	if len(secrets) == 0 {
 		return nil
 	}
 
@@ -105,7 +105,7 @@ func (c *Client) Insert(table, namespace string, configs []*lib.Config) error {
 
 	var writeRequest *dynamodb.WriteRequest
 
-	for _, config := range configs {
+	for _, secret := range secrets {
 		writeRequest = &dynamodb.WriteRequest{
 			PutRequest: &dynamodb.PutRequest{
 				Item: map[string]*dynamodb.AttributeValue{
@@ -113,10 +113,10 @@ func (c *Client) Insert(table, namespace string, configs []*lib.Config) error {
 						S: aws.String(namespace),
 					},
 					"key": &dynamodb.AttributeValue{
-						S: aws.String(config.Key),
+						S: aws.String(secret.Key),
 					},
 					"value": &dynamodb.AttributeValue{
-						S: aws.String(config.Value),
+						S: aws.String(secret.Value),
 					},
 				},
 			},
@@ -137,8 +137,8 @@ func (c *Client) Insert(table, namespace string, configs []*lib.Config) error {
 	return nil
 }
 
-// ListConfigs returns all configs in the given table and namespace
-func (c *Client) ListConfigs(table, namespace string) ([]*lib.Config, error) {
+// ListSecrets returns all secrets in the given table and namespace
+func (c *Client) ListSecrets(table, namespace string) ([]*secret.Secret, error) {
 	keyConditions := map[string]*dynamodb.Condition{
 		"namespace": &dynamodb.Condition{
 			ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
@@ -156,22 +156,21 @@ func (c *Client) ListConfigs(table, namespace string) ([]*lib.Config, error) {
 
 	resp, err := c.api.Query(params)
 	if err != nil {
-		return []*lib.Config{}, errors.Wrapf(err, "Failed to list up configs. namespace=%s", namespace)
+		return []*secret.Secret{}, errors.Wrapf(err, "Failed to list up secrets. namespace=%s", namespace)
 	}
 
-	configs := []*lib.Config{}
-	var config *lib.Config
+	secrets := []*secret.Secret{}
 
 	for _, item := range resp.Items {
-		config = &lib.Config{
+		secret := &secret.Secret{
 			Key:   *item["key"].S,
 			Value: *item["value"].S,
 		}
 
-		configs = append(configs, config)
+		secrets = append(secrets, secret)
 	}
 
-	return configs, nil
+	return secrets, nil
 }
 
 // ListNamespaces returns all namespaces

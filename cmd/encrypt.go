@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/dtan4/valec/aws"
-	"github.com/dtan4/valec/lib"
+	"github.com/dtan4/valec/secret"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -32,25 +32,25 @@ var encryptCmd = &cobra.Command{
 			return errors.Wrapf(err, "Failed to encrypt.")
 		}
 
-		if configFile == "" {
+		if secretFile == "" {
 			fmt.Println(cipherText)
 		} else {
-			configMap := map[string]string{}
+			secretMap := map[string]string{}
 
-			if _, err := os.Stat(configFile); err == nil {
-				configs, err2 := lib.LoadConfigYAML(configFile)
+			if _, err := os.Stat(secretFile); err == nil {
+				secrets, err2 := secret.LoadFromYAML(secretFile)
 				if err2 != nil {
-					return errors.Wrapf(err2, "Failed to load local config file. filename=%s", configFile)
+					return errors.Wrapf(err2, "Failed to load local secret file. filename=%s", secretFile)
 				}
 
-				configMap = lib.ConfigsToMap(configs)
+				secretMap = secrets.ListToMap()
 			}
 
-			configMap[key] = cipherText
-			newConfigs := lib.MapToConfigs(configMap)
+			secretMap[key] = cipherText
+			newSecrets := secret.MapToList(secretMap)
 
-			if err := lib.SaveAsYAML(newConfigs, configFile); err != nil {
-				return errors.Wrapf(err, "Failed to update local config file. filename=%s", configFile)
+			if err := newSecrets.SaveAsYAML(secretFile); err != nil {
+				return errors.Wrapf(err, "Failed to update local secret file. filename=%s", secretFile)
 			}
 		}
 
@@ -61,5 +61,5 @@ var encryptCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(encryptCmd)
 
-	encryptCmd.Flags().StringVar(&configFile, "add", "", "Add to local config file")
+	encryptCmd.Flags().StringVar(&secretFile, "add", "", "Add to local secret file")
 }

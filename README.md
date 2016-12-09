@@ -34,12 +34,12 @@ Valec enables you to manage application secrets in your favorite VCS.
 
     ```bash
     $ valec sync production.yaml
-    No config will be deleted.
+    No secret will be deleted.
 
-    2 configs of production namespace will be added.
+    2 secrets of production namespace will be added.
     - AWS_SECRET_ACCESS_KEY
     - AWS_ACCESS_KEY_ID
-    2 configs of production namespace were successfully added.
+    2 secrets of production namespace were successfully added.
     ```
 
 4. Use stored secrets in your application.
@@ -166,25 +166,25 @@ fuga.yaml       hoge.yaml
 
 $ valec sync secrets
 fuga
-  No config will be deleted.
-  No config will be added.
+  No secret will be deleted.
+  No secret will be added.
 hoge
-  No config will be deleted.
-  1 configs of hoge namespace will be added.
+  No secret will be deleted.
+  1 secrets of hoge namespace will be added.
     + HOGE
-  1 configs of hoge namespace were successfully added.
+  1 secrets of hoge namespace were successfully added.
 ```
 
 If `--dry-run` flag is given, Valec does not modify DynamoDB table actually. This might be useful for CI use.
 
 ```bash
-$ valec sync configs --dry-run
+$ valec sync secrets --dry-run
 fuga
-  No config will be deleted.
-  No config will be added.
+  No secret will be deleted.
+  No secret will be added.
 hoge
-  No config will be deleted.
-  1 configs of hoge namespace will be added.
+  No secret will be deleted.
+  1 secrets of hoge namespace will be added.
     + HOGE
 ```
 
@@ -196,7 +196,7 @@ Validate secrets in local files
 $ valec validate secrets
 secrets/fuga.yaml
 secrets/hoge.yaml
-All configs are valid.
+All secrets are valid.
 ```
 
 When invalid values exist:
@@ -205,8 +205,8 @@ When invalid values exist:
 $ valec validate secrets
 secrets/fuga.yaml
 secrets/hoge.yaml
-  Config value is invalid. Please try `valec encrypt`. key=HOGE
-Failed to validate configs. filename=tmp/hoge.yaml: Some configs are invalid.
+  Secret value is invalid. Please try `valec encrypt`. key=HOGE
+Failed to validate secrets. filename=tmp/hoge.yaml: Some secrets are invalid.
 ```
 
 ### Common flags

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/dtan4/valec/aws"
-	"github.com/dtan4/valec/lib"
+	"github.com/dtan4/valec/secret"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -22,18 +22,18 @@ var dumpCmd = &cobra.Command{
 		}
 		namespace := args[0]
 
-		configs, err := aws.DynamoDB.ListConfigs(tableName, namespace)
+		secrets, err := aws.DynamoDB.ListSecrets(tableName, namespace)
 		if err != nil {
-			return errors.Wrap(err, "Failed to retrieve configs.")
+			return errors.Wrap(err, "Failed to retrieve secrets.")
 		}
 
 		if dotenvTemplate == "" {
-			if err := dumpAll(configs); err != nil {
-				return errors.Wrap(err, "Failed to dump all configs.")
+			if err := dumpAll(secrets); err != nil {
+				return errors.Wrap(err, "Failed to dump all secrets.")
 			}
 		} else {
-			if err := dumpWithTemplate(configs); err != nil {
-				return errors.Wrap(err, "Failed to dump configs with dotenv template.")
+			if err := dumpWithTemplate(secrets); err != nil {
+				return errors.Wrap(err, "Failed to dump secrets with dotenv template.")
 			}
 		}
 
@@ -41,27 +41,27 @@ var dumpCmd = &cobra.Command{
 	},
 }
 
-func dumpAll(configs []*lib.Config) error {
-	for _, config := range configs {
-		plainValue, err := aws.KMS.DecryptBase64(config.Key, config.Value)
+func dumpAll(secrets secret.Secrets) error {
+	for _, secret := range secrets {
+		plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
 		if err != nil {
 			return errors.Wrap(err, "Failed to decrypt value.")
 		}
 
-		fmt.Printf("%s=%s\n", config.Key, plainValue)
+		fmt.Printf("%s=%s\n", secret.Key, plainValue)
 	}
 
 	return nil
 }
 
-func dumpWithTemplate(configs []*lib.Config) error {
+func dumpWithTemplate(secrets secret.Secrets) error {
 	fp, err := os.Open(dotenvTemplate)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to open dotenv template. filename=%s", dotenvTemplate)
 	}
 	defer fp.Close()
 
-	configMap := lib.ConfigsToMap(configs)
+	secretMap := secrets.ListToMap()
 	sc := bufio.NewScanner(fp)
 
 	for sc.Scan() {
@@ -81,7 +81,7 @@ func dumpWithTemplate(configs []*lib.Config) error {
 		key, value := ss[0], ss[1]
 
 		if override || value == "" {
-			v, ok := configMap[key]
+			v, ok := secretMap[key]
 			if ok {
 				plainValue, err := aws.KMS.DecryptBase64(key, v)
 				if err != nil {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dtan4/valec/aws"
-	"github.com/dtan4/valec/lib"
+	"github.com/dtan4/valec/secret"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -23,53 +23,53 @@ To list secrets stored in local file, specify file:
 Encrypted values are decrypted and printed as plain text.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
-			configs []*lib.Config
+			secrets []*secret.Secret
 			err     error
 		)
 
-		if configFile == "" {
+		if secretFile == "" {
 			if len(args) != 1 {
-				return errors.New("Please specify namespace or config file (-f FILE).")
+				return errors.New("Please specify namespace or secret file (-f FILE).")
 			}
 			namespace := args[0]
 
-			configs, err = aws.DynamoDB.ListConfigs(tableName, namespace)
+			secrets, err = aws.DynamoDB.ListSecrets(tableName, namespace)
 			if err != nil {
-				return errors.Wrapf(err, "Failed to load configs from DynamoDB. namespace=%s", namespace)
+				return errors.Wrapf(err, "Failed to load secrets from DynamoDB. namespace=%s", namespace)
 			}
 		} else {
-			configs, err = lib.LoadConfigYAML(configFile)
+			secrets, err = secret.LoadFromYAML(secretFile)
 			if err != nil {
-				return errors.Wrapf(err, "Failed to load configs from file. filename=%s", configFile)
+				return errors.Wrapf(err, "Failed to load secrets from file. filename=%s", secretFile)
 			}
 		}
 
-		longestLength := longestKeyLength(configs)
+		longestLength := longestKeyLength(secrets)
 
-		for _, config := range configs {
-			plainValue, err := aws.KMS.DecryptBase64(config.Key, config.Value)
+		for _, secret := range secrets {
+			plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
 			if err != nil {
-				return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", config.Key, config.Value)
+				return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", secret.Key, secret.Value)
 			}
 
 			padding := ""
-			for i := 0; i < longestLength-len(config.Key); i++ {
+			for i := 0; i < longestLength-len(secret.Key); i++ {
 				padding += " "
 			}
 
-			fmt.Printf("%s:%s %s\n", config.Key, padding, plainValue)
+			fmt.Printf("%s:%s %s\n", secret.Key, padding, plainValue)
 		}
 
 		return nil
 	},
 }
 
-func longestKeyLength(configs []*lib.Config) int {
+func longestKeyLength(secrets []*secret.Secret) int {
 	longest := 0
 
-	for _, config := range configs {
-		if longest < len(config.Key) {
-			longest = len(config.Key)
+	for _, secret := range secrets {
+		if longest < len(secret.Key) {
+			longest = len(secret.Key)
 		}
 	}
 
@@ -79,5 +79,5 @@ func longestKeyLength(configs []*lib.Config) int {
 func init() {
 	RootCmd.AddCommand(listCmd)
 
-	listCmd.Flags().StringVarP(&configFile, "file", "f", "", "Config file")
+	listCmd.Flags().StringVarP(&secretFile, "file", "f", "", "Secret file")
 }
