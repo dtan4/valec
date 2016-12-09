@@ -94,7 +94,7 @@ func syncFile(filename, parentNamespace string) error {
 		return errors.Wrapf(err, "Failed to retrieve secrets. namespace=%s", namespace)
 	}
 
-	added, deleted := secret.CompareSecretList(srcSecrets, dstSecrets)
+	added, deleted := secret.CompareList(srcSecrets, dstSecrets)
 	red := color.New(color.FgRed)
 	green := color.New(color.FgGreen)
 

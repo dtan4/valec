@@ -13,8 +13,8 @@ type Secret struct {
 	Value string `yaml:"value"`
 }
 
-// CompareSecretList compares two secret lists and returns the differences between them
-func CompareSecretList(src, dst []*Secret) ([]*Secret, []*Secret) {
+// CompareList compares two secret lists and returns the differences between them
+func CompareList(src, dst []*Secret) ([]*Secret, []*Secret) {
 	added, deleted := []*Secret{}, []*Secret{}
 	srcMap, dstMap := SecretsToMap(src), SecretsToMap(dst)
 

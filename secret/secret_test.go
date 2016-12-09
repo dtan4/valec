@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestCompareSecretList(t *testing.T) {
+func TestCompareList(t *testing.T) {
 	src := []*Secret{
 		&Secret{
 			Key:   "FOO",
@@ -69,7 +69,7 @@ func TestCompareSecretList(t *testing.T) {
 		},
 	}
 
-	added, deleted := CompareSecretList(src, dst)
+	added, deleted := CompareList(src, dst)
 
 	if !secretListsEqual(added, expectAdded) {
 		t.Errorf("Returned added secrets are wrong. expected: %s, actual: %s", stringifySecretList(expectAdded), stringifySecretList(added))
