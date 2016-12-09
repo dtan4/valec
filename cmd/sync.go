@@ -28,29 +28,55 @@ var syncCmd = &cobra.Command{
 		}
 		dirname := args[0]
 
-		files, err := ioutil.ReadDir(dirname)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
-		}
-
-		for _, file := range files {
-			if strings.HasPrefix(file.Name(), ".") || !yamlExtRegexp.Match([]byte(file.Name())) {
-				continue
-			}
-
-			filename := filepath.Join(dirname, file.Name())
-
-			if err := syncFile(filename); err != nil {
-				return errors.Wrapf(err, "Failed to synchronize configs. filename=%s", filename)
-			}
+		if err := walkDir(dirname, ""); err != nil {
+			return errors.Wrapf(err, "Failed to parse directory. dirname=%s", dirname)
 		}
 
 		return nil
 	},
 }
 
-func syncFile(filename string) error {
-	namespace := yamlExtRegexp.ReplaceAllString(filepath.Base(filename), "")
+func walkDir(dirname, parentNamespace string) error {
+	files, err := ioutil.ReadDir(dirname)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to open directory. dirname=%s", dirname)
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			subdirname := filepath.Join(dirname, file.Name())
+
+			if err := walkDir(subdirname, file.Name()); err != nil {
+				return errors.Wrapf(err, "Failed to parse directory. dirname=%s", subdirname)
+			}
+
+			continue
+		}
+
+		if strings.HasPrefix(file.Name(), ".") || !yamlExtRegexp.Match([]byte(file.Name())) {
+			continue
+		}
+
+		filename := filepath.Join(dirname, file.Name())
+
+		if err := syncFile(filename, parentNamespace); err != nil {
+			return errors.Wrapf(err, "Failed to synchronize configs. filename=%s", filename)
+		}
+	}
+
+	return nil
+}
+
+func syncFile(filename, parentNamespace string) error {
+	namespaceBase := yamlExtRegexp.ReplaceAllString(filepath.Base(filename), "")
+
+	var namespace string
+
+	if parentNamespace == "" {
+		namespace = namespaceBase
+	} else {
+		namespace = parentNamespace + "/" + namespaceBase
+	}
 	fmt.Println(namespace)
 
 	srcConfigs, err := lib.LoadConfigYAML(filename)
