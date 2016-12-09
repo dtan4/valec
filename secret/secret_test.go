@@ -139,7 +139,7 @@ func TestLoadSecretFromYAML_valid(t *testing.T) {
 	}
 }
 
-func TestSecretsToMap(t *testing.T) {
+func TestListToMap(t *testing.T) {
 	secrets := []*Secret{
 		&Secret{
 			Key:   "FOO",
@@ -160,7 +160,7 @@ func TestSecretsToMap(t *testing.T) {
 		"HOGE": "fuga",
 	}
 
-	secretMap := SecretsToMap(secrets)
+	secretMap := ListToMap(secrets)
 
 	if !reflect.DeepEqual(secretMap, expected) {
 		t.Errorf("Secret map does not match. expected: %q, actual:%q", expected, secretMap)

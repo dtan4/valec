@@ -43,7 +43,7 @@ var encryptCmd = &cobra.Command{
 					return errors.Wrapf(err2, "Failed to load local secret file. filename=%s", secretFile)
 				}
 
-				secretMap = secret.SecretsToMap(secrets)
+				secretMap = secret.ListToMap(secrets)
 			}
 
 			secretMap[key] = cipherText

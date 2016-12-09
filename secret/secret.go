@@ -16,7 +16,7 @@ type Secret struct {
 // CompareList compares two secret lists and returns the differences between them
 func CompareList(src, dst []*Secret) ([]*Secret, []*Secret) {
 	added, deleted := []*Secret{}, []*Secret{}
-	srcMap, dstMap := SecretsToMap(src), SecretsToMap(dst)
+	srcMap, dstMap := ListToMap(src), ListToMap(dst)
 
 	for _, c := range src {
 		v, ok := dstMap[c.Key]
@@ -35,8 +35,8 @@ func CompareList(src, dst []*Secret) ([]*Secret, []*Secret) {
 	return added, deleted
 }
 
-// SecretsToMap converts secret list to map
-func SecretsToMap(secrets []*Secret) map[string]string {
+// ListToMap converts secret list to map
+func ListToMap(secrets []*Secret) map[string]string {
 	secretMap := map[string]string{}
 
 	for _, secret := range secrets {

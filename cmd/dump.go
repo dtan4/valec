@@ -61,7 +61,7 @@ func dumpWithTemplate(secrets []*secret.Secret) error {
 	}
 	defer fp.Close()
 
-	secretMap := secret.SecretsToMap(secrets)
+	secretMap := secret.ListToMap(secrets)
 	sc := bufio.NewScanner(fp)
 
 	for sc.Scan() {
