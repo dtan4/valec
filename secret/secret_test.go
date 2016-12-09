@@ -10,6 +10,119 @@ import (
 	"testing"
 )
 
+func TestLen(t *testing.T) {
+	secrets := Secrets{
+		&Secret{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Secret{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Secret{
+			Key:   "HOGE",
+			Value: "fuga",
+		},
+	}
+
+	expected := 3
+	actual := secrets.Len()
+
+	if actual != expected {
+		t.Errorf("Length of secrets is wrong. expected: %d, actual: %d", expected, actual)
+	}
+}
+
+func TestLess(t *testing.T) {
+	secrets := Secrets{
+		&Secret{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Secret{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Secret{
+			Key:   "FOO",
+			Value: "fuga",
+		},
+	}
+	testcases := []struct {
+		i        int
+		j        int
+		expected bool
+	}{
+		{
+			i:        0,
+			j:        1,
+			expected: true,
+		},
+		{
+			i:        1,
+			j:        0,
+			expected: false,
+		},
+		{
+			i:        0,
+			j:        0,
+			expected: false,
+		},
+		{
+			i:        1,
+			j:        2,
+			expected: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		actual := secrets.Less(tc.i, tc.j)
+		if actual != tc.expected {
+			t.Errorf("Comparison result is wrong. src: %q, dst: %q, expected: %t, actual: %t", secrets[tc.i], secrets[tc.j], tc.expected, actual)
+		}
+	}
+}
+
+func TestSwap(t *testing.T) {
+	secrets := Secrets{
+		&Secret{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Secret{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Secret{
+			Key:   "HOGE",
+			Value: "fuga",
+		},
+	}
+
+	i, j := 0, 1
+	expected := Secrets{
+		&Secret{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Secret{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Secret{
+			Key:   "HOGE",
+			Value: "fuga",
+		},
+	}
+
+	secrets.Swap(i, j)
+
+	if !reflect.DeepEqual(secrets, expected) {
+		t.Errorf("Swap result is wrong. expected: %q, actual: %q", expected, secrets)
+	}
+}
+
 func TestCompareList(t *testing.T) {
 	src := []*Secret{
 		&Secret{

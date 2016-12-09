@@ -13,6 +13,42 @@ type Secret struct {
 	Value string `yaml:"value"`
 }
 
+// Secrets represents the array of Secret
+type Secrets []*Secret
+
+// Len returns the length of the array
+func (ss Secrets) Len() int {
+	return len(ss)
+}
+
+// Less returns Secrets[i] is less than Secrets[j]
+func (ss Secrets) Less(i, j int) bool {
+	si, sj := ss[i], ss[j]
+
+	if si.Key < sj.Key {
+		return true
+	}
+
+	if si.Key > sj.Key {
+		return false
+	}
+
+	if si.Value < sj.Value {
+		return true
+	}
+
+	if si.Value > sj.Value {
+		return false
+	}
+
+	return false
+}
+
+// Swap swaps Secrets[i] and Secrets[j]
+func (ss Secrets) Swap(i, j int) {
+	ss[i], ss[j] = ss[j], ss[i]
+}
+
 // CompareList compares two secret lists and returns the differences between them
 func CompareList(src, dst []*Secret) ([]*Secret, []*Secret) {
 	added, deleted := []*Secret{}, []*Secret{}
