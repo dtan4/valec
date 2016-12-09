@@ -77,7 +77,11 @@ func syncFile(filename, parentNamespace string) error {
 	} else {
 		namespace = parentNamespace + "/" + namespaceBase
 	}
-	fmt.Println(namespace)
+	if noColor {
+		fmt.Println(namespace)
+	} else {
+		color.New(color.Bold).Println(namespace)
+	}
 
 	srcConfigs, err := lib.LoadConfigYAML(filename)
 	if err != nil {
@@ -94,7 +98,7 @@ func syncFile(filename, parentNamespace string) error {
 	green := color.New(color.FgGreen)
 
 	if len(deleted) > 0 {
-		fmt.Printf("%  d configs of %s namespace will be deleted.\n", len(deleted), namespace)
+		fmt.Printf("%  d configs will be deleted.\n", len(deleted))
 		for _, config := range deleted {
 			if noColor {
 				fmt.Printf("    - %s\n", config.Key)
@@ -108,14 +112,14 @@ func syncFile(filename, parentNamespace string) error {
 				return errors.Wrapf(err, "Failed to delete configs. namespace=%s", namespace)
 			}
 
-			fmt.Printf("  %d configs of %s namespace were successfully deleted.\n", len(deleted), namespace)
+			fmt.Printf("  %d configs were successfully deleted.\n", len(deleted))
 		}
 	} else {
 		fmt.Println("  No config will be deleted.")
 	}
 
 	if len(added) > 0 {
-		fmt.Printf("  %d configs of %s namespace will be added.\n", len(added), namespace)
+		fmt.Printf("  %d configs will be added.\n", len(added))
 		for _, config := range added {
 			if noColor {
 				fmt.Printf("    + %s\n", config.Key)
@@ -126,10 +130,10 @@ func syncFile(filename, parentNamespace string) error {
 
 		if !dryRun {
 			if err := aws.DynamoDB.Insert(tableName, namespace, added); err != nil {
-				return errors.Wrapf(err, "Failed to insert configs. namespace=%s", namespace)
+				return errors.Wrapf(err, "Failed to insert configs. namespace=%s")
 			}
 
-			fmt.Printf("  %d configs of %s namespace were successfully added.\n", len(added), namespace)
+			fmt.Printf("  %d configs were successfully added.\n", len(added))
 		}
 	} else {
 		fmt.Println("  No config will be added.")
