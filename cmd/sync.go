@@ -77,6 +77,7 @@ func syncFile(filename, parentNamespace string) error {
 	} else {
 		namespace = parentNamespace + "/" + namespaceBase
 	}
+
 	if noColor {
 		fmt.Println(namespace)
 	} else {
