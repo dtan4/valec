@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/dtan4/valec/aws"
-	"github.com/dtan4/valec/lib"
+	"github.com/dtan4/valec/secret"
 	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -20,11 +20,11 @@ var (
 
 // syncCmd represents the sync command
 var syncCmd = &cobra.Command{
-	Use:   "sync CONFIGDIR [NAMESPACE]",
+	Use:   "sync SECRETDIR [NAMESPACE]",
 	Short: "Synchronize secrets between local file and DynamoDB",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("Please specify config directory.")
+			return errors.New("Please specify secret directory.")
 		}
 		dirname := args[0]
 
@@ -60,7 +60,7 @@ func walkDir(dirname, parentNamespace string) error {
 		filename := filepath.Join(dirname, file.Name())
 
 		if err := syncFile(filename, parentNamespace); err != nil {
-			return errors.Wrapf(err, "Failed to synchronize configs. filename=%s", filename)
+			return errors.Wrapf(err, "Failed to synchronize secrets. filename=%s", filename)
 		}
 	}
 
@@ -84,60 +84,60 @@ func syncFile(filename, parentNamespace string) error {
 		color.New(color.Bold).Println(namespace)
 	}
 
-	srcConfigs, err := lib.LoadConfigYAML(filename)
+	srcSecrets, err := secret.LoadSecretYAML(filename)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to load configs. filename=%s", filename)
+		return errors.Wrapf(err, "Failed to load secrets. filename=%s", filename)
 	}
 
-	dstConfigs, err := aws.DynamoDB.ListConfigs(tableName, namespace)
+	dstSecrets, err := aws.DynamoDB.ListSecrets(tableName, namespace)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to retrieve configs. namespace=%s", namespace)
+		return errors.Wrapf(err, "Failed to retrieve secrets. namespace=%s", namespace)
 	}
 
-	added, deleted := lib.CompareConfigList(srcConfigs, dstConfigs)
+	added, deleted := secret.CompareSecretList(srcSecrets, dstSecrets)
 	red := color.New(color.FgRed)
 	green := color.New(color.FgGreen)
 
 	if len(deleted) > 0 {
-		fmt.Printf("%  d configs will be deleted.\n", len(deleted))
-		for _, config := range deleted {
+		fmt.Printf("%  d secrets will be deleted.\n", len(deleted))
+		for _, secret := range deleted {
 			if noColor {
-				fmt.Printf("    - %s\n", config.Key)
+				fmt.Printf("    - %s\n", secret.Key)
 			} else {
-				red.Printf("    - %s\n", config.Key)
+				red.Printf("    - %s\n", secret.Key)
 			}
 		}
 
 		if !dryRun {
 			if err := aws.DynamoDB.Delete(tableName, namespace, deleted); err != nil {
-				return errors.Wrapf(err, "Failed to delete configs. namespace=%s", namespace)
+				return errors.Wrapf(err, "Failed to delete secrets. namespace=%s", namespace)
 			}
 
-			fmt.Printf("  %d configs were successfully deleted.\n", len(deleted))
+			fmt.Printf("  %d secrets were successfully deleted.\n", len(deleted))
 		}
 	} else {
-		fmt.Println("  No config will be deleted.")
+		fmt.Println("  No secret will be deleted.")
 	}
 
 	if len(added) > 0 {
-		fmt.Printf("  %d configs will be added.\n", len(added))
-		for _, config := range added {
+		fmt.Printf("  %d secrets will be added.\n", len(added))
+		for _, secret := range added {
 			if noColor {
-				fmt.Printf("    + %s\n", config.Key)
+				fmt.Printf("    + %s\n", secret.Key)
 			} else {
-				green.Printf("    + %s\n", config.Key)
+				green.Printf("    + %s\n", secret.Key)
 			}
 		}
 
 		if !dryRun {
 			if err := aws.DynamoDB.Insert(tableName, namespace, added); err != nil {
-				return errors.Wrapf(err, "Failed to insert configs. namespace=%s")
+				return errors.Wrapf(err, "Failed to insert secrets. namespace=%s")
 			}
 
-			fmt.Printf("  %d configs were successfully added.\n", len(added))
+			fmt.Printf("  %d secrets were successfully added.\n", len(added))
 		}
 	} else {
-		fmt.Println("  No config will be added.")
+		fmt.Println("  No secret will be added.")
 	}
 
 	return nil

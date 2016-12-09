@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/dtan4/valec/aws"
-	"github.com/dtan4/valec/lib"
+	"github.com/dtan4/valec/secret"
 	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -15,11 +15,11 @@ import (
 
 // validateCmd represents the validate command
 var validateCmd = &cobra.Command{
-	Use:   "validate CONFIGDIR",
+	Use:   "validate SECRETDIR",
 	Short: "Validate secrets in local files",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("Please specify config directory.")
+			return errors.New("Please specify secret directory.")
 		}
 		dirname := args[0]
 
@@ -36,11 +36,11 @@ var validateCmd = &cobra.Command{
 			filename := filepath.Join(dirname, file.Name())
 
 			if err := validateFile(filename); err != nil {
-				return errors.Wrapf(err, "Failed to validate configs. filename=%s", filename)
+				return errors.Wrapf(err, "Failed to validate secrets. filename=%s", filename)
 			}
 		}
 
-		fmt.Println("All configs are valid.")
+		fmt.Println("All secrets are valid.")
 
 		return nil
 	},
@@ -49,23 +49,23 @@ var validateCmd = &cobra.Command{
 func validateFile(filename string) error {
 	fmt.Println(filename)
 
-	configs, err := lib.LoadConfigYAML(filename)
+	secrets, err := secret.LoadSecretYAML(filename)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to load configs. filename=%s", filename)
+		return errors.Wrapf(err, "Failed to load secrets. filename=%s", filename)
 	}
 
 	hasError := false
 	red := color.New(color.FgRed)
 
-	for _, config := range configs {
-		if _, err := aws.KMS.DecryptBase64(config.Key, config.Value); err != nil {
-			red.Printf("  Config value is invalid. Please try `valec encrypt`. key=%s\n", config.Key)
+	for _, secret := range secrets {
+		if _, err := aws.KMS.DecryptBase64(secret.Key, secret.Value); err != nil {
+			red.Printf("  Secret value is invalid. Please try `valec encrypt`. key=%s\n", secret.Key)
 			hasError = true
 		}
 	}
 
 	if hasError {
-		return errors.New("Some configs are invalid.")
+		return errors.New("Some secrets are invalid.")
 	}
 
 	return nil
