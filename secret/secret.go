@@ -2,6 +2,7 @@ package secret
 
 import (
 	"io/ioutil"
+	"sort"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -100,7 +101,7 @@ func LoadFromYAML(filename string) ([]*Secret, error) {
 
 // MapToList converts map to secret list
 func MapToList(secretMap map[string]string) []*Secret {
-	secrets := []*Secret{}
+	secrets := Secrets{}
 
 	for key, value := range secretMap {
 		secrets = append(secrets, &Secret{
@@ -108,6 +109,8 @@ func MapToList(secretMap map[string]string) []*Secret {
 			Value: value,
 		})
 	}
+
+	sort.Sort(secrets)
 
 	return secrets
 }

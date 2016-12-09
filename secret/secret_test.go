@@ -320,12 +320,12 @@ func TestMapToList(t *testing.T) {
 	}
 	expected := []*Secret{
 		&Secret{
-			Key:   "FOO",
-			Value: "bar",
-		},
-		&Secret{
 			Key:   "BAZ",
 			Value: "1",
+		},
+		&Secret{
+			Key:   "FOO",
+			Value: "bar",
 		},
 		&Secret{
 			Key:   "HOGE",
