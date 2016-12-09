@@ -124,7 +124,7 @@ func TestSwap(t *testing.T) {
 }
 
 func TestCompareList(t *testing.T) {
-	src := []*Secret{
+	src := Secrets{
 		&Secret{
 			Key:   "FOO",
 			Value: "bar",
@@ -138,7 +138,7 @@ func TestCompareList(t *testing.T) {
 			Value: "fuga",
 		},
 	}
-	dst := []*Secret{
+	dst := Secrets{
 		&Secret{
 			Key:   "FOO",
 			Value: "baz",
@@ -157,7 +157,7 @@ func TestCompareList(t *testing.T) {
 		},
 	}
 
-	expectAdded := []*Secret{
+	expectAdded := Secrets{
 		&Secret{
 			Key:   "FOO",
 			Value: "bar",
@@ -167,7 +167,7 @@ func TestCompareList(t *testing.T) {
 			Value: "fuga",
 		},
 	}
-	expectDeleted := []*Secret{
+	expectDeleted := Secrets{
 		&Secret{
 			Key:   "FOO",
 			Value: "baz",
@@ -182,7 +182,7 @@ func TestCompareList(t *testing.T) {
 		},
 	}
 
-	added, deleted := CompareList(src, dst)
+	added, deleted := src.CompareList(dst)
 
 	if !secretListsEqual(added, expectAdded) {
 		t.Errorf("Returned added secrets are wrong. expected: %s, actual: %s", stringifySecretList(expectAdded), stringifySecretList(added))
@@ -193,7 +193,7 @@ func TestCompareList(t *testing.T) {
 	}
 }
 
-func secretListsEqual(a, b []*Secret) bool {
+func secretListsEqual(a, b Secrets) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -211,7 +211,7 @@ func secretListsEqual(a, b []*Secret) bool {
 	return true
 }
 
-func stringifySecretList(secrets []*Secret) string {
+func stringifySecretList(secrets Secrets) string {
 	ss := []string{}
 
 	for _, secret := range secrets {
@@ -219,6 +219,75 @@ func stringifySecretList(secrets []*Secret) string {
 	}
 
 	return fmt.Sprintf("[%s]", strings.Join(ss, ", "))
+}
+
+func TestListToMap(t *testing.T) {
+	secrets := Secrets{
+		&Secret{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Secret{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Secret{
+			Key:   "HOGE",
+			Value: "fuga",
+		},
+	}
+	expected := map[string]string{
+		"FOO":  "bar",
+		"BAZ":  "1",
+		"HOGE": "fuga",
+	}
+
+	secretMap := secrets.ListToMap()
+
+	if !reflect.DeepEqual(secretMap, expected) {
+		t.Errorf("Secret map does not match. expected: %q, actual:%q", expected, secretMap)
+	}
+}
+
+func testdataPath(name string) string {
+	return filepath.Join("..", "testdata", name)
+}
+
+func TestSaveAsYAML(t *testing.T) {
+	secrets := Secrets{
+		&Secret{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Secret{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Secret{
+			Key:   "HOGE",
+			Value: "fuga",
+		},
+	}
+
+	dir, err := ioutil.TempDir("", "test-save-as-yaml")
+	if err != nil {
+		t.Fatalf("Failed to create tempdir. dir: %s", dir)
+	}
+	defer os.RemoveAll(dir)
+
+	filename := filepath.Join(dir, "secret.yaml")
+
+	if err := secrets.SaveAsYAML(filename); err != nil {
+		t.Fatalf("Error should not be raised. err: %s", err)
+	}
+
+	if _, err := os.Stat(filename); err != nil {
+		if os.IsNotExist(err) {
+			t.Fatalf("File is not created. err: %s", err)
+		} else {
+			t.Fatalf("Saved file has something wrong. err: %s", err)
+		}
+	}
 }
 
 func TestLoadFromFromYAML_valid(t *testing.T) {
@@ -252,34 +321,6 @@ func TestLoadFromFromYAML_valid(t *testing.T) {
 	}
 }
 
-func TestListToMap(t *testing.T) {
-	secrets := []*Secret{
-		&Secret{
-			Key:   "FOO",
-			Value: "bar",
-		},
-		&Secret{
-			Key:   "BAZ",
-			Value: "1",
-		},
-		&Secret{
-			Key:   "HOGE",
-			Value: "fuga",
-		},
-	}
-	expected := map[string]string{
-		"FOO":  "bar",
-		"BAZ":  "1",
-		"HOGE": "fuga",
-	}
-
-	secretMap := ListToMap(secrets)
-
-	if !reflect.DeepEqual(secretMap, expected) {
-		t.Errorf("Secret map does not match. expected: %q, actual:%q", expected, secretMap)
-	}
-}
-
 func TestLoadFromFromYAML_invalid(t *testing.T) {
 	filepath := testdataPath("test_invalid.yaml")
 	_, err := LoadFromYAML(filepath)
@@ -308,17 +349,13 @@ func TestLoadFromFromYAML_notexist(t *testing.T) {
 	}
 }
 
-func testdataPath(name string) string {
-	return filepath.Join("..", "testdata", name)
-}
-
 func TestMapToList(t *testing.T) {
 	secretMap := map[string]string{
 		"FOO":  "bar",
 		"BAZ":  "1",
 		"HOGE": "fuga",
 	}
-	expected := []*Secret{
+	expected := Secrets{
 		&Secret{
 			Key:   "BAZ",
 			Value: "1",
@@ -337,42 +374,5 @@ func TestMapToList(t *testing.T) {
 
 	if !reflect.DeepEqual(secrets, expected) {
 		t.Errorf("Secret list does not match. expected: %q, actual:%q", expected, secrets)
-	}
-}
-
-func TestSaveAsYAML(t *testing.T) {
-	secrets := []*Secret{
-		&Secret{
-			Key:   "FOO",
-			Value: "bar",
-		},
-		&Secret{
-			Key:   "BAZ",
-			Value: "1",
-		},
-		&Secret{
-			Key:   "HOGE",
-			Value: "fuga",
-		},
-	}
-
-	dir, err := ioutil.TempDir("", "test-save-as-yaml")
-	if err != nil {
-		t.Fatalf("Failed to create tempdir. dir: %s", dir)
-	}
-	defer os.RemoveAll(dir)
-
-	filename := filepath.Join(dir, "secret.yaml")
-
-	if err := SaveAsYAML(secrets, filename); err != nil {
-		t.Fatalf("Error should not be raised. err: %s", err)
-	}
-
-	if _, err := os.Stat(filename); err != nil {
-		if os.IsNotExist(err) {
-			t.Fatalf("File is not created. err: %s", err)
-		} else {
-			t.Fatalf("Saved file has something wrong. err: %s", err)
-		}
 	}
 }

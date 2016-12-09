@@ -43,13 +43,13 @@ var encryptCmd = &cobra.Command{
 					return errors.Wrapf(err2, "Failed to load local secret file. filename=%s", secretFile)
 				}
 
-				secretMap = secret.ListToMap(secrets)
+				secretMap = secrets.ListToMap()
 			}
 
 			secretMap[key] = cipherText
 			newSecrets := secret.MapToList(secretMap)
 
-			if err := secret.SaveAsYAML(newSecrets, secretFile); err != nil {
+			if err := newSecrets.SaveAsYAML(secretFile); err != nil {
 				return errors.Wrapf(err, "Failed to update local secret file. filename=%s", secretFile)
 			}
 		}

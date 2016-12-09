@@ -51,18 +51,18 @@ func (ss Secrets) Swap(i, j int) {
 }
 
 // CompareList compares two secret lists and returns the differences between them
-func CompareList(src, dst []*Secret) ([]*Secret, []*Secret) {
-	added, deleted := []*Secret{}, []*Secret{}
-	srcMap, dstMap := ListToMap(src), ListToMap(dst)
+func (ss Secrets) CompareList(target Secrets) (Secrets, Secrets) {
+	added, deleted := Secrets{}, Secrets{}
+	srcMap, dstMap := ss.ListToMap(), target.ListToMap()
 
-	for _, c := range src {
+	for _, c := range ss {
 		v, ok := dstMap[c.Key]
 		if !ok || v != c.Value {
 			added = append(added, c)
 		}
 	}
 
-	for _, c := range dst {
+	for _, c := range target {
 		v, ok := srcMap[c.Key]
 		if !ok || v != c.Value {
 			deleted = append(deleted, c)
@@ -73,34 +73,48 @@ func CompareList(src, dst []*Secret) ([]*Secret, []*Secret) {
 }
 
 // ListToMap converts secret list to map
-func ListToMap(secrets []*Secret) map[string]string {
+func (ss Secrets) ListToMap() map[string]string {
 	secretMap := map[string]string{}
 
-	for _, secret := range secrets {
+	for _, secret := range ss {
 		secretMap[secret.Key] = secret.Value
 	}
 
 	return secretMap
 }
 
-// LoadFromYAML loads secrets from the given YAML file
-func LoadFromYAML(filename string) ([]*Secret, error) {
-	body, err := ioutil.ReadFile(filename)
+// SaveAsYAML saves secrets to local secret file
+func (ss Secrets) SaveAsYAML(filename string) error {
+	body, err := yaml.Marshal(ss)
 	if err != nil {
-		return []*Secret{}, errors.Wrapf(err, "Failed to read secret file. filename=%s", filename)
+		return errors.Wrap(err, "Failed to convert secrets as YAML.")
 	}
 
-	var secrets []*Secret
+	if err := ioutil.WriteFile(filename, body, 0644); err != nil {
+		return errors.Wrapf(err, "Failed to save file. filename=%s", filename)
+	}
+
+	return nil
+}
+
+// LoadFromYAML loads secrets from the given YAML file
+func LoadFromYAML(filename string) (Secrets, error) {
+	body, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return Secrets{}, errors.Wrapf(err, "Failed to read secret file. filename=%s", filename)
+	}
+
+	var secrets Secrets
 
 	if err := yaml.Unmarshal(body, &secrets); err != nil {
-		return []*Secret{}, errors.Wrapf(err, "Failed to parse secret file as YAML. filename=%s", filename)
+		return Secrets{}, errors.Wrapf(err, "Failed to parse secret file as YAML. filename=%s", filename)
 	}
 
 	return secrets, nil
 }
 
 // MapToList converts map to secret list
-func MapToList(secretMap map[string]string) []*Secret {
+func MapToList(secretMap map[string]string) Secrets {
 	secrets := Secrets{}
 
 	for key, value := range secretMap {
@@ -113,18 +127,4 @@ func MapToList(secretMap map[string]string) []*Secret {
 	sort.Sort(secrets)
 
 	return secrets
-}
-
-// SaveAsYAML saves secrets to local secret file
-func SaveAsYAML(secrets []*Secret, filename string) error {
-	body, err := yaml.Marshal(secrets)
-	if err != nil {
-		return errors.Wrap(err, "Failed to convert secrets as YAML.")
-	}
-
-	if err := ioutil.WriteFile(filename, body, 0644); err != nil {
-		return errors.Wrapf(err, "Failed to save file. filename=%s", filename)
-	}
-
-	return nil
 }

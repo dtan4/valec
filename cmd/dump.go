@@ -41,7 +41,7 @@ var dumpCmd = &cobra.Command{
 	},
 }
 
-func dumpAll(secrets []*secret.Secret) error {
+func dumpAll(secrets secret.Secrets) error {
 	for _, secret := range secrets {
 		plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
 		if err != nil {
@@ -54,14 +54,14 @@ func dumpAll(secrets []*secret.Secret) error {
 	return nil
 }
 
-func dumpWithTemplate(secrets []*secret.Secret) error {
+func dumpWithTemplate(secrets secret.Secrets) error {
 	fp, err := os.Open(dotenvTemplate)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to open dotenv template. filename=%s", dotenvTemplate)
 	}
 	defer fp.Close()
 
-	secretMap := secret.ListToMap(secrets)
+	secretMap := secrets.ListToMap()
 	sc := bufio.NewScanner(fp)
 
 	for sc.Scan() {
