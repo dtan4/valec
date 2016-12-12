@@ -119,6 +119,13 @@ $ valec exec hoge env | grep HOGE
 HOGE=fuga
 ```
 
+With `-k KEYS` flag, you can use secrets you specified only.
+
+```bash
+$ valec exec hoge -k HOGE env
+HOGE=fuga
+```
+
 ### `valec init`
 
 Initialize Valec environment
