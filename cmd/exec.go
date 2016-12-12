@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 
 	"github.com/dtan4/valec/aws"
@@ -30,9 +31,21 @@ Stored secrets are consumed as environment variables.
 			return errors.Wrapf(err, "Failed to load secrets from DynamoDB. namespace=%s", namespace)
 		}
 
+		fetchKeys := map[string]bool{}
+
+		if keys != "" {
+			for _, s := range strings.Split(keys, ",") {
+				fetchKeys[s] = true
+			}
+		}
+
 		envs := os.Environ()
 
 		for _, secret := range secrets {
+			if len(fetchKeys) > 0 && !fetchKeys[secret.Key] {
+				continue
+			}
+
 			plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
 			if err != nil {
 				return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", secret.Key, secret.Value)
@@ -59,4 +72,6 @@ Stored secrets are consumed as environment variables.
 
 func init() {
 	RootCmd.AddCommand(execCmd)
+
+	execCmd.Flags().StringVarP(&keys, "keys", "k", "", "Secret keys to fetch")
 }

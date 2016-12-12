@@ -11,6 +11,7 @@ var (
 
 // command-specific flag variable
 var (
+	keys           string
 	secretFile     string
 	dotenvTemplate string
 	dryRun         bool
