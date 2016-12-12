@@ -166,7 +166,7 @@ func TestCompareList(t *testing.T) {
 	expectUpdated := Secrets{
 		&Secret{
 			Key:   "FOO",
-			Value: "baz",
+			Value: "bar",
 		},
 	}
 	expectDeleted := Secrets{

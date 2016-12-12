@@ -55,18 +55,18 @@ func (ss Secrets) CompareList(target Secrets) (added, updated, deleted Secrets) 
 	srcMap, dstMap := ss.ListToMap(), target.ListToMap()
 
 	for _, c := range ss {
-		_, ok := dstMap[c.Key]
+		v, ok := dstMap[c.Key]
 		if !ok {
 			added = append(added, c)
+		} else if v != c.Value {
+			updated = append(updated, c)
 		}
 	}
 
 	for _, c := range target {
-		v, ok := srcMap[c.Key]
+		_, ok := srcMap[c.Key]
 		if !ok {
 			deleted = append(deleted, c)
-		} else if v != c.Value {
-			updated = append(updated, c)
 		}
 	}
 
