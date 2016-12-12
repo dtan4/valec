@@ -1,3 +1,12 @@
+# [v0.3.0](https://github.com/dtan4/s3url/releases/tag/v0.3.0) (2016-12-12)
+
+## Features
+
+- Show error if the given namespace does not exist [#22](https://github.com/dtan4/valec/pull/22)
+- Detect 'updated changes [#21](https://github.com/dtan4/valec/pull/21)
+- Sort secrets alphabetically [#20](https://github.com/dtan4/valec/pull/20)
+- Synchronize nested namespace [#19](https://github.com/dtan4/valec/pull/19)
+
 # [v0.2.1](https://github.com/dtan4/s3url/releases/tag/v0.2.1) (2016-12-05)
 
 ## Features
