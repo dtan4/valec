@@ -73,5 +73,5 @@ Stored secrets are consumed as environment variables.
 func init() {
 	RootCmd.AddCommand(execCmd)
 
-	execCmd.Flags().StringVarP(&keys, "keys", "k", "", "Secret keys to fetch")
+	execCmd.Flags().StringVarP(&keys, "keys", "k", "", "Secret keys to fetch (KEY1,KEY2,...)")
 }
