@@ -27,6 +27,10 @@ var dumpCmd = &cobra.Command{
 			return errors.Wrap(err, "Failed to retrieve secrets.")
 		}
 
+		if len(secrets) == 0 {
+			return errors.Errorf("Namespace %s does not exist.", namespace)
+		}
+
 		if dotenvTemplate == "" {
 			if err := dumpAll(secrets); err != nil {
 				return errors.Wrap(err, "Failed to dump all secrets.")

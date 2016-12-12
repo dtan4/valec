@@ -37,6 +37,10 @@ Encrypted values are decrypted and printed as plain text.`,
 			if err != nil {
 				return errors.Wrapf(err, "Failed to load secrets from DynamoDB. namespace=%s", namespace)
 			}
+
+			if len(secrets) == 0 {
+				return errors.Errorf("Namespace %s does not exist.", namespace)
+			}
 		} else {
 			secrets, err = secret.LoadFromYAML(secretFile)
 			if err != nil {
