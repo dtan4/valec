@@ -94,9 +94,10 @@ func syncFile(filename, parentNamespace string) error {
 		return errors.Wrapf(err, "Failed to retrieve secrets. namespace=%s", namespace)
 	}
 
-	added, deleted := srcSecrets.CompareList(dstSecrets)
+	added, updated, deleted := srcSecrets.CompareList(dstSecrets)
 	red := color.New(color.FgRed)
 	green := color.New(color.FgGreen)
+	yellow := color.New(color.FgYellow)
 
 	if len(deleted) > 0 {
 		fmt.Printf("%  d secrets will be deleted.\n", len(deleted))
@@ -115,8 +116,25 @@ func syncFile(filename, parentNamespace string) error {
 
 			fmt.Printf("  %d secrets were successfully deleted.\n", len(deleted))
 		}
-	} else {
-		fmt.Println("  No secret will be deleted.")
+	}
+
+	if len(updated) > 0 {
+		fmt.Printf("  %d secrets will be updated.\n", len(updated))
+		for _, secret := range updated {
+			if noColor {
+				fmt.Printf("    + %s\n", secret.Key)
+			} else {
+				yellow.Printf("    + %s\n", secret.Key)
+			}
+		}
+
+		if !dryRun {
+			if err := aws.DynamoDB.Insert(tableName, namespace, updated); err != nil {
+				return errors.Wrapf(err, "Failed to insert secrets. namespace=%s")
+			}
+
+			fmt.Printf("  %d secrets were successfully updated.\n", len(updated))
+		}
 	}
 
 	if len(added) > 0 {
@@ -136,8 +154,6 @@ func syncFile(filename, parentNamespace string) error {
 
 			fmt.Printf("  %d secrets were successfully added.\n", len(added))
 		}
-	} else {
-		fmt.Println("  No secret will be added.")
 	}
 
 	return nil
