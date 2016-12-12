@@ -51,25 +51,26 @@ func (ss Secrets) Swap(i, j int) {
 }
 
 // CompareList compares two secret lists and returns the differences between them
-func (ss Secrets) CompareList(target Secrets) (Secrets, Secrets) {
-	added, deleted := Secrets{}, Secrets{}
+func (ss Secrets) CompareList(target Secrets) (added, updated, deleted Secrets) {
 	srcMap, dstMap := ss.ListToMap(), target.ListToMap()
 
 	for _, c := range ss {
-		v, ok := dstMap[c.Key]
-		if !ok || v != c.Value {
+		_, ok := dstMap[c.Key]
+		if !ok {
 			added = append(added, c)
 		}
 	}
 
 	for _, c := range target {
 		v, ok := srcMap[c.Key]
-		if !ok || v != c.Value {
+		if !ok {
 			deleted = append(deleted, c)
+		} else if v != c.Value {
+			updated = append(updated, c)
 		}
 	}
 
-	return added, deleted
+	return added, updated, deleted
 }
 
 // ListToMap converts secret list to map

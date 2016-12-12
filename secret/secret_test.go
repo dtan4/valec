@@ -159,19 +159,17 @@ func TestCompareList(t *testing.T) {
 
 	expectAdded := Secrets{
 		&Secret{
-			Key:   "FOO",
-			Value: "bar",
-		},
-		&Secret{
 			Key:   "HOGE",
 			Value: "fuga",
 		},
 	}
-	expectDeleted := Secrets{
+	expectUpdated := Secrets{
 		&Secret{
 			Key:   "FOO",
 			Value: "baz",
 		},
+	}
+	expectDeleted := Secrets{
 		&Secret{
 			Key:   "QUX",
 			Value: "true",
@@ -182,10 +180,14 @@ func TestCompareList(t *testing.T) {
 		},
 	}
 
-	added, deleted := src.CompareList(dst)
+	added, updated, deleted := src.CompareList(dst)
 
 	if !secretListsEqual(added, expectAdded) {
 		t.Errorf("Returned added secrets are wrong. expected: %s, actual: %s", stringifySecretList(expectAdded), stringifySecretList(added))
+	}
+
+	if !secretListsEqual(updated, expectUpdated) {
+		t.Errorf("Returned updated secrets are wrong. expected: %s, actual: %s", stringifySecretList(expectUpdated), stringifySecretList(updated))
 	}
 
 	if !secretListsEqual(deleted, expectDeleted) {
