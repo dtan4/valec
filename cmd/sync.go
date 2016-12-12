@@ -116,8 +116,6 @@ func syncFile(filename, parentNamespace string) error {
 
 			fmt.Printf("  %d secrets were successfully deleted.\n", len(deleted))
 		}
-	} else {
-		fmt.Println("  No secret will be deleted.")
 	}
 
 	if len(updated) > 0 {
@@ -137,8 +135,6 @@ func syncFile(filename, parentNamespace string) error {
 
 			fmt.Printf("  %d secrets were successfully updated.\n", len(updated))
 		}
-	} else {
-		fmt.Println("  No secret will be updated.")
 	}
 
 	if len(added) > 0 {
@@ -158,8 +154,6 @@ func syncFile(filename, parentNamespace string) error {
 
 			fmt.Printf("  %d secrets were successfully added.\n", len(added))
 		}
-	} else {
-		fmt.Println("  No secret will be added.")
 	}
 
 	return nil
