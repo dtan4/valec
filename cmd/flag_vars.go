@@ -14,5 +14,6 @@ var (
 	secretFile     string
 	dotenvTemplate string
 	dryRun         bool
+	output         string
 	override       bool
 )
