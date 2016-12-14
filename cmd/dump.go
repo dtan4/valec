@@ -51,7 +51,7 @@ var dumpCmd = &cobra.Command{
 				fmt.Println(line)
 			}
 		} else {
-			body := []byte(strings.Join(dotenv, "\n"))
+			body := []byte(strings.Join(dotenv, "\n") + "\n")
 			if override {
 				util.WriteFile(output, body)
 			} else {
@@ -93,13 +93,13 @@ func dumpWithTemplate(secrets secret.Secrets) ([]string, error) {
 		line := sc.Text()
 
 		if strings.HasPrefix(line, "#") {
-			fmt.Println(line)
+			dotenv = append(dotenv, line)
 			continue
 		}
 
 		ss := strings.SplitN(line, "=", 2)
 		if len(ss) != 2 {
-			fmt.Println(line)
+			dotenv = append(dotenv, line)
 			continue
 		}
 
