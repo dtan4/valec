@@ -8,6 +8,34 @@ import (
 	"testing"
 )
 
+func TestSeparatorRegexp(t *testing.T) {
+	positiveCases := []string{
+		"#--------",
+		"#========",
+		"# ------",
+		"# =====",
+		"### =====",
+		"# ===== production",
+	}
+
+	for _, s := range positiveCases {
+		if !separatorRegExp.Match([]byte(s)) {
+			t.Errorf("String %q should be matched to regexp.", s)
+		}
+	}
+
+	negativeCases := []string{
+		"#FOO=bar",
+		"FOO=#===bar",
+	}
+
+	for _, s := range negativeCases {
+		if separatorRegExp.Match([]byte(s)) {
+			t.Errorf("String %q should not be matched to regexp.", s)
+		}
+	}
+}
+
 func TestWriteFile(t *testing.T) {
 	body := []byte(`FOO=bar
 BAZ=1

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	separatorRegExp = regexp.MustCompile(`^#(?:-+|=+)$`)
+	separatorRegExp = regexp.MustCompile(`^#+ *(?:-+|=+).*$`)
 )
 
 // WriteFile writes body to file
