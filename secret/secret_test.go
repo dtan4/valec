@@ -255,6 +255,57 @@ func testdataPath(name string) string {
 	return filepath.Join("..", "testdata", name)
 }
 
+func TestSaveAsDotenv(t *testing.T) {
+	secrets := Secrets{
+		&Secret{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Secret{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Secret{
+			Key:   "HOGE",
+			Value: "fuga",
+		},
+	}
+	dir, err := ioutil.TempDir("", "test-save-as-dotenv")
+	if err != nil {
+		t.Fatalf("Failed to create tempdir. dir: %s", dir)
+	}
+	defer os.RemoveAll(dir)
+
+	filename := filepath.Join(dir, "secret.yaml")
+
+	if err := secrets.SaveAsDotenv(filename, false); err != nil {
+		t.Errorf("Error should not be raised. err: %s", err)
+	}
+
+	if _, err := os.Stat(filename); err != nil {
+		if os.IsNotExist(err) {
+			t.Errorf("File is not created. filename: %s", filename)
+		} else {
+			t.Errorf("Saved file has something wrong. err: %s", err)
+		}
+	}
+
+	body, err := ioutil.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("Failed to open file. filename: %s", filename)
+	}
+
+	expected := `FOO=bar
+BAZ=1
+HOGE=fuga
+`
+	actual := string(body)
+
+	if actual != expected {
+		t.Errorf("File body does not match. expected: %q, actual: %q", expected, actual)
+	}
+}
+
 func TestSaveAsYAML(t *testing.T) {
 	secrets := Secrets{
 		&Secret{

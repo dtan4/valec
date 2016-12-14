@@ -1,8 +1,10 @@
 package secret
 
 import (
+	"fmt"
 	"io/ioutil"
 	"sort"
+	"strings"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -82,6 +84,21 @@ func (ss Secrets) ListToMap() map[string]string {
 	}
 
 	return secretMap
+}
+
+// SaveAsDotenv saves secrets as dotenv format
+func (ss Secrets) SaveAsDotenv(filename string, preserve bool) error {
+	sslice := []string{}
+
+	for _, secret := range ss {
+		sslice = append(sslice, fmt.Sprintf("%s=%s", secret.Key, secret.Value))
+	}
+
+	if err := ioutil.WriteFile(filename, []byte(strings.Join(sslice, "\n")+"\n"), 0644); err != nil {
+		return errors.Wrapf(err, "Failed to save file. filename=%s", filename)
+	}
+
+	return nil
 }
 
 // SaveAsYAML saves secrets to local secret file
