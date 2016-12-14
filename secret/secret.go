@@ -1,13 +1,20 @@
 package secret
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"regexp"
 	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
+)
+
+var (
+	separatorRegExp = regexp.MustCompile(`^#(?:-+|=+)$`)
 )
 
 // Secret represents key=value pair
@@ -94,7 +101,64 @@ func (ss Secrets) SaveAsDotenv(filename string, preserve bool) error {
 		sslice = append(sslice, fmt.Sprintf("%s=%s", secret.Key, secret.Value))
 	}
 
-	if err := ioutil.WriteFile(filename, []byte(strings.Join(sslice, "\n")+"\n"), 0644); err != nil {
+	body := []byte(strings.Join(sslice, "\n") + "\n")
+
+	if _, err := os.Stat(filename); err != nil {
+		if os.IsNotExist(err) {
+			if err2 := saveEntirely(filename, body); err2 != nil {
+				return errors.Wrapf(err, "Failed to create and save file. filename=%s", filename)
+			}
+		} else {
+			return errors.Errorf("File has something wrong. filename=%s", filename)
+		}
+	} else {
+		if preserve {
+			if err2 := saveWithSection(filename, body); err2 != nil {
+				return errors.Wrapf(err, "Failed to overwrite file. filename=%s", filename)
+			}
+		} else {
+			if err2 := saveEntirely(filename, body); err2 != nil {
+				return errors.Wrapf(err, "Failed to overwrite file. filename=%s", filename)
+			}
+		}
+	}
+
+	return nil
+}
+
+func saveEntirely(filename string, body []byte) error {
+	if err := ioutil.WriteFile(filename, body, 0644); err != nil {
+		return errors.Wrapf(err, "Failed to save file. filename=%s", filename)
+	}
+
+	return nil
+}
+
+func saveWithSection(filename string, body []byte) error {
+	fp, err := os.Open(filename)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to open file. filename=%s", filename)
+	}
+
+	sc := bufio.NewScanner(fp)
+	preserve := false
+	preserveLines := []string{""}
+
+	for sc.Scan() {
+		line := sc.Text()
+
+		if !preserve && separatorRegExp.Match([]byte(line)) {
+			preserve = true
+		}
+
+		if preserve {
+			preserveLines = append(preserveLines, line)
+		}
+	}
+
+	body = append(body, []byte(strings.Join(preserveLines, "\n")+"\n")...)
+
+	if err := ioutil.WriteFile(filename, body, 0644); err != nil {
 		return errors.Wrapf(err, "Failed to save file. filename=%s", filename)
 	}
 

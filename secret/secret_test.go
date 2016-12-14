@@ -2,6 +2,7 @@ package secret
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -255,7 +256,7 @@ func testdataPath(name string) string {
 	return filepath.Join("..", "testdata", name)
 }
 
-func TestSaveAsDotenv(t *testing.T) {
+func TestSaveAsDotenv_create(t *testing.T) {
 	secrets := Secrets{
 		&Secret{
 			Key:   "FOO",
@@ -304,6 +305,86 @@ HOGE=fuga
 	if actual != expected {
 		t.Errorf("File body does not match. expected: %q, actual: %q", expected, actual)
 	}
+}
+
+func TestSaveAsDotenv_preserve(t *testing.T) {
+	secrets := Secrets{
+		&Secret{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Secret{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Secret{
+			Key:   "HOGE",
+			Value: "fuga",
+		},
+	}
+	dir, err := ioutil.TempDir("", "test-save-as-dotenv-preserve")
+	if err != nil {
+		t.Fatalf("Failed to create tempdir. dir: %s", dir)
+	}
+	defer os.RemoveAll(dir)
+
+	srcName := filepath.Join("..", "testdata", "test.env")
+	dstName := filepath.Join(dir, ".env")
+	if err := copyFile(srcName, dstName); err != nil {
+		t.Fatalf("Failed to copy file. src: %s, dst: %s, err: %s", srcName, dstName, err)
+	}
+
+	if err := secrets.SaveAsDotenv(dstName, true); err != nil {
+		t.Errorf("Error should not be raised. err: %s", err)
+	}
+
+	if _, err := os.Stat(dstName); err != nil {
+		if os.IsNotExist(err) {
+			t.Errorf("File is not created. filename: %s", dstName)
+		} else {
+			t.Errorf("Saved file has something wrong. err: %s", err)
+		}
+	}
+
+	body, err := ioutil.ReadFile(dstName)
+	if err != nil {
+		t.Fatalf("Failed to open file. filename: %s", dstName)
+	}
+
+	expected := `FOO=bar
+BAZ=1
+HOGE=fuga
+
+#-------------
+
+FOO=production-foo
+`
+	actual := string(body)
+
+	if actual != expected {
+		t.Errorf("File body does not match. expected: %q, actual: %q", expected, actual)
+	}
+}
+
+func copyFile(srcName, dstName string) error {
+	src, err := os.Open(srcName)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	dst, err := os.Create(dstName)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	_, err = io.Copy(dst, src)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func TestSaveAsYAML(t *testing.T) {
