@@ -92,6 +92,38 @@ SSSS=
 $ valec dump hoge -t .env.sample > .env
 ```
 
+To write dump data to `.env` file, you can use shell redirect or `--output` flag.
+
+```bash
+$ valec dump hoge > .env
+$ valec dump hoge --output .env
+```
+
+`--output` flag preserves the specified section in existing `.env`. If the given `.env` already exists and has _separator_ (`# =====`, `# -----` and so on), the below lines are preserved.
+Please look the following example.
+
+```
+$ cat .env
+FOO=bar
+DATABASE_URL=postgres://dev.example.com/dev
+
+# ===
+DATABASE_URL=postgres://prod.example.com/prod
+```
+
+```
+# Added AWESOME_API_KEY
+$ valec dump dev --output .env
+$ cat .env
+FOO=bar
+DATABASE_URL=postgres://dev.example.com/dev
+AWESOME_API_KEY=dev1234abcd
+
+# ===
+DATABASE_URL=postgres://prod.example.com/prod
+```
+
+
 ### `valec encrypt`
 
 Encrypt secret
