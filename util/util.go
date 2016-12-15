@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	separatorRegExp = regexp.MustCompile(`^#+ *(?:-+|=+).*$`)
+	separatorRegExp = regexp.MustCompile(`^#+\s*[-=]{3,}`)
 )
 
 // WriteFile writes body to file

@@ -16,6 +16,7 @@ func TestSeparatorRegexp(t *testing.T) {
 		"# =====",
 		"### =====",
 		"# ===== production",
+		"# ===== production =====",
 	}
 
 	for _, s := range positiveCases {
