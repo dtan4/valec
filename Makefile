@@ -1,5 +1,5 @@
 NAME      := valec
-VERSION   := v0.3.0
+VERSION   := v0.3.1
 REVISION  := $(shell git rev-parse --short HEAD)
 
 SRCS      := $(shell find . -name '*.go' -type f)
