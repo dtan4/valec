@@ -1,3 +1,9 @@
+# [v0.3.1](https://github.com/dtan4/s3url/releases/tag/v0.3.1) (2016-12-15)
+
+## Features
+
+- Add `valec dump --output` flag to dump dotenv with preserved lines [#25](https://github.com/dtan4/valec/pull/25)
+
 # [v0.3.0](https://github.com/dtan4/s3url/releases/tag/v0.3.0) (2016-12-12)
 
 ## Features
