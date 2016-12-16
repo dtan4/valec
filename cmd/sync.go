@@ -2,20 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
-	"regexp"
-	"strings"
 
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/secret"
+	"github.com/dtan4/valec/util"
 	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-)
-
-var (
-	yamlExtRegexp = regexp.MustCompile(`\.[yY][aA]?[mM][lL]$`)
 )
 
 // syncCmd represents the sync command
@@ -28,55 +21,23 @@ var syncCmd = &cobra.Command{
 		}
 		dirname := args[0]
 
-		if err := walkDir(dirname, ""); err != nil {
-			return errors.Wrapf(err, "Failed to parse directory. dirname=%s", dirname)
+		files, err := util.ListYAMLFiles(dirname)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
+		}
+
+		for _, file := range files {
+			if err := syncFile(file, dirname); err != nil {
+				return errors.Wrapf(err, "Failed to synchronize file. filename=%s", file)
+			}
 		}
 
 		return nil
 	},
 }
 
-func walkDir(dirname, parentNamespace string) error {
-	files, err := ioutil.ReadDir(dirname)
-	if err != nil {
-		return errors.Wrapf(err, "Failed to open directory. dirname=%s", dirname)
-	}
-
-	for _, file := range files {
-		if file.IsDir() {
-			subdirname := filepath.Join(dirname, file.Name())
-
-			if err := walkDir(subdirname, file.Name()); err != nil {
-				return errors.Wrapf(err, "Failed to parse directory. dirname=%s", subdirname)
-			}
-
-			continue
-		}
-
-		if strings.HasPrefix(file.Name(), ".") || !yamlExtRegexp.Match([]byte(file.Name())) {
-			continue
-		}
-
-		filename := filepath.Join(dirname, file.Name())
-
-		if err := syncFile(filename, parentNamespace); err != nil {
-			return errors.Wrapf(err, "Failed to synchronize secrets. filename=%s", filename)
-		}
-	}
-
-	return nil
-}
-
-func syncFile(filename, parentNamespace string) error {
-	namespaceBase := yamlExtRegexp.ReplaceAllString(filepath.Base(filename), "")
-
-	var namespace string
-
-	if parentNamespace == "" {
-		namespace = namespaceBase
-	} else {
-		namespace = parentNamespace + "/" + namespaceBase
-	}
+func syncFile(filename, dirname string) error {
+	namespace := util.NamespaceFromPath(filename, dirname)
 
 	if noColor {
 		fmt.Println(namespace)

@@ -61,11 +61,13 @@ func ListYAMLFiles(dirname string) ([]string, error) {
 			continue
 		}
 
-		if strings.HasPrefix(file.Name(), ".") || !yamlExtRegexp.Match([]byte(file.Name())) {
+		filename := filepath.Join(dirname, file.Name())
+
+		if !IsSecretFile(filename) {
 			continue
 		}
 
-		files = append(files, filepath.Join(dirname, file.Name()))
+		files = append(files, filename)
 	}
 
 	return files, nil
