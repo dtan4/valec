@@ -1,3 +1,10 @@
+# [v0.3.2](https://github.com/dtan4/s3url/releases/tag/v0.3.2) (2016-12-16)
+
+## Features
+
+- Validate nested secret files [#28](https://github.com/dtan4/valec/pull/28)
+- Add `valec dump -q` flag to dump dotenv values as quoted string [#27](https://github.com/dtan4/valec/pull/27)
+
 # [v0.3.1](https://github.com/dtan4/s3url/releases/tag/v0.3.1) (2016-12-15)
 
 ## Features
@@ -9,7 +16,7 @@
 ## Features
 
 - Show error if the given namespace does not exist [#22](https://github.com/dtan4/valec/pull/22)
-- Detect 'updated changes [#21](https://github.com/dtan4/valec/pull/21)
+- Detect updated changes [#21](https://github.com/dtan4/valec/pull/21)
 - Sort secrets alphabetically [#20](https://github.com/dtan4/valec/pull/20)
 - Synchronize nested namespace [#19](https://github.com/dtan4/valec/pull/19)
 
