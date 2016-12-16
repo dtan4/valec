@@ -38,6 +38,43 @@ func TestSeparatorRegexp(t *testing.T) {
 	}
 }
 
+func TestNamespaceFromPath(t *testing.T) {
+	testcases := []struct {
+		path     string
+		basedir  string
+		expected string
+	}{
+		{
+			path:     filepath.Join("secrets", "foo.yml"),
+			basedir:  "secrets",
+			expected: "foo",
+		},
+		{
+			path:     filepath.Join("secrets", "foo", "bar.yml"),
+			basedir:  "secrets",
+			expected: "foo/bar",
+		},
+		{
+			path:     filepath.Join("secrets", "foo", "bar.yml"),
+			basedir:  filepath.Join("secrets", "foo"),
+			expected: "bar",
+		},
+		{
+			path:     filepath.Join("secrets", "foo", "bar", "baz.yaml"),
+			basedir:  "secrets",
+			expected: "foo/bar/baz",
+		},
+	}
+
+	for _, tc := range testcases {
+		actual := NamespaceFromPath(tc.path, tc.basedir)
+
+		if actual != tc.expected {
+			t.Errorf("Namespace does not match. expected: %q, actual: %q", tc.expected, actual)
+		}
+	}
+}
+
 func TestListYAMLFiles(t *testing.T) {
 	dirname := filepath.Join("..", "testdata", "foo")
 	expected := []string{

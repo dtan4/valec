@@ -16,6 +16,21 @@ var (
 	yamlExtRegexp   = regexp.MustCompile(`\.[yY][aA]?[mM][lL]$`)
 )
 
+// NamespaceFromPath returns namespace from the given path
+func NamespaceFromPath(path, basedir string) string {
+	var namespace string
+
+	namespace = strings.Replace(path, basedir, "", 1)
+	namespace = filepath.ToSlash(namespace)
+	namespace = yamlExtRegexp.ReplaceAllString(namespace, "")
+
+	if strings.HasPrefix(namespace, "/") {
+		namespace = namespace[1:len(namespace)]
+	}
+
+	return namespace
+}
+
 // ListYAMLFiles parses and executes function recursively
 func ListYAMLFiles(dirname string) ([]string, error) {
 	files := []string{}
