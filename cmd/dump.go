@@ -35,12 +35,12 @@ var dumpCmd = &cobra.Command{
 		var dotenv []string
 
 		if dotenvTemplate == "" {
-			dotenv, err = dumpAll(secrets)
+			dotenv, err = dumpAll(secrets, quote)
 			if err != nil {
 				return errors.Wrap(err, "Failed to dump all secrets.")
 			}
 		} else {
-			dotenv, err = dumpWithTemplate(secrets)
+			dotenv, err = dumpWithTemplate(secrets, quote)
 			if err != nil {
 				return errors.Wrap(err, "Failed to dump secrets with dotenv template.")
 			}
@@ -63,7 +63,7 @@ var dumpCmd = &cobra.Command{
 	},
 }
 
-func dumpAll(secrets secret.Secrets) ([]string, error) {
+func dumpAll(secrets secret.Secrets, quote bool) ([]string, error) {
 	dotenv := []string{}
 
 	for _, secret := range secrets {
@@ -72,13 +72,17 @@ func dumpAll(secrets secret.Secrets) ([]string, error) {
 			return []string{}, errors.Wrap(err, "Failed to decrypt value.")
 		}
 
-		dotenv = append(dotenv, fmt.Sprintf("%s=%s", secret.Key, plainValue))
+		if quote {
+			dotenv = append(dotenv, fmt.Sprintf("%s=%q", secret.Key, plainValue))
+		} else {
+			dotenv = append(dotenv, fmt.Sprintf("%s=%s", secret.Key, plainValue))
+		}
 	}
 
 	return dotenv, nil
 }
 
-func dumpWithTemplate(secrets secret.Secrets) ([]string, error) {
+func dumpWithTemplate(secrets secret.Secrets, quote bool) ([]string, error) {
 	fp, err := os.Open(dotenvTemplate)
 	if err != nil {
 		return []string{}, errors.Wrapf(err, "Failed to open dotenv template. filename=%s", dotenvTemplate)
@@ -117,7 +121,11 @@ func dumpWithTemplate(secrets secret.Secrets) ([]string, error) {
 			}
 		}
 
-		dotenv = append(dotenv, fmt.Sprintf("%s=%s", key, value))
+		if quote {
+			dotenv = append(dotenv, fmt.Sprintf("%s=%q", key, value))
+		} else {
+			dotenv = append(dotenv, fmt.Sprintf("%s=%s", key, value))
+		}
 	}
 
 	return dotenv, nil
@@ -128,5 +136,6 @@ func init() {
 
 	dumpCmd.Flags().BoolVar(&override, "override", false, "Override values in existing template")
 	dumpCmd.Flags().StringVarP(&output, "output", "o", "", "File to flush dotenv")
+	dumpCmd.Flags().BoolVarP(&quote, "quote", "q", false, "Quote values")
 	dumpCmd.Flags().StringVarP(&dotenvTemplate, "template", "t", "", "Dotenv template")
 }
