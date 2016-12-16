@@ -47,6 +47,7 @@ func validateFile(filename string) error {
 	}
 
 	hasError := false
+	green := color.New(color.FgGreen)
 	red := color.New(color.FgRed)
 
 	for _, secret := range secrets {
@@ -59,6 +60,8 @@ func validateFile(filename string) error {
 	if hasError {
 		return errors.New("Some secrets are invalid.")
 	}
+
+	green.Println("  All secrets are valid.")
 
 	return nil
 }
