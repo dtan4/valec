@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 )
 
@@ -34,6 +35,23 @@ func TestSeparatorRegexp(t *testing.T) {
 		if separatorRegExp.Match([]byte(s)) {
 			t.Errorf("String %q should not be matched to regexp.", s)
 		}
+	}
+}
+
+func TestListYAMLFiles(t *testing.T) {
+	dirname := filepath.Join("..", "testdata", "foo")
+	expected := []string{
+		filepath.Join("..", "testdata", "foo", "bar", "test_valid.yaml"),
+		filepath.Join("..", "testdata", "foo", "test.yml"),
+	}
+
+	actual, err := ListYAMLFiles(dirname)
+	if err != nil {
+		t.Errorf("Error should not raised. err: %s", err)
+	}
+
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("YAML file list is wrong. expected: %q, actual: %q", expected, actual)
 	}
 }
 
