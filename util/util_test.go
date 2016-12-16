@@ -38,6 +38,37 @@ func TestSeparatorRegexp(t *testing.T) {
 	}
 }
 
+func TestIsSecretFile(t *testing.T) {
+	testcases := []struct {
+		filename string
+		expected bool
+	}{
+		{
+			filename: filepath.Join("secrets", "foo.yml"),
+			expected: true,
+		},
+		{
+			filename: filepath.Join("secrets", "foo", "bar.yaml"),
+			expected: true,
+		},
+		{
+			filename: filepath.Join("secrets", "foo", "bar"),
+			expected: false,
+		},
+		{
+			filename: filepath.Join("secrets", "foo", ".env"),
+			expected: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		actual := IsSecretFile(tc.filename)
+		if actual != tc.expected {
+			t.Errorf("IsSecretFile result is wrong. filename: %s, expected: %t, actual: %t", tc.filename, tc.expected, actual)
+		}
+	}
+}
+
 func TestNamespaceFromPath(t *testing.T) {
 	testcases := []struct {
 		path     string

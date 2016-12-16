@@ -16,6 +16,13 @@ var (
 	yamlExtRegexp   = regexp.MustCompile(`\.[yY][aA]?[mM][lL]$`)
 )
 
+// IsSecretFile returns whether the given file is secret file or not
+func IsSecretFile(filename string) bool {
+	base := filepath.Base(filename)
+
+	return !strings.HasPrefix(base, ".") && yamlExtRegexp.MatchString(filepath.Ext(base))
+}
+
 // NamespaceFromPath returns namespace from the given path
 func NamespaceFromPath(path, basedir string) string {
 	var namespace string
