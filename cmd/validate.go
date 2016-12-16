@@ -2,12 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
-	"strings"
 
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/secret"
+	"github.com/dtan4/valec/util"
 	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -23,24 +21,16 @@ var validateCmd = &cobra.Command{
 		}
 		dirname := args[0]
 
-		files, err := ioutil.ReadDir(dirname)
+		files, err := util.ListYAMLFiles(dirname)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
 		}
 
 		for _, file := range files {
-			if strings.HasPrefix(file.Name(), ".") || !yamlExtRegexp.Match([]byte(file.Name())) {
-				continue
-			}
-
-			filename := filepath.Join(dirname, file.Name())
-
-			if err := validateFile(filename); err != nil {
-				return errors.Wrapf(err, "Failed to validate secrets. filename=%s", filename)
+			if err := validateFile(file); err != nil {
+				return errors.Wrapf(err, "Failed to validate file. filename=%s", file)
 			}
 		}
-
-		fmt.Println("All secrets are valid.")
 
 		return nil
 	},
@@ -55,6 +45,7 @@ func validateFile(filename string) error {
 	}
 
 	hasError := false
+	green := color.New(color.FgGreen)
 	red := color.New(color.FgRed)
 
 	for _, secret := range secrets {
@@ -67,6 +58,8 @@ func validateFile(filename string) error {
 	if hasError {
 		return errors.New("Some secrets are invalid.")
 	}
+
+	green.Println("  All secrets are valid.")
 
 	return nil
 }

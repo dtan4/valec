@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 )
 
@@ -34,6 +35,91 @@ func TestSeparatorRegexp(t *testing.T) {
 		if separatorRegExp.Match([]byte(s)) {
 			t.Errorf("String %q should not be matched to regexp.", s)
 		}
+	}
+}
+
+func TestIsSecretFile(t *testing.T) {
+	testcases := []struct {
+		filename string
+		expected bool
+	}{
+		{
+			filename: filepath.Join("secrets", "foo.yml"),
+			expected: true,
+		},
+		{
+			filename: filepath.Join("secrets", "foo", "bar.yaml"),
+			expected: true,
+		},
+		{
+			filename: filepath.Join("secrets", "foo", "bar"),
+			expected: false,
+		},
+		{
+			filename: filepath.Join("secrets", "foo", ".env"),
+			expected: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		actual := IsSecretFile(tc.filename)
+		if actual != tc.expected {
+			t.Errorf("IsSecretFile result is wrong. filename: %s, expected: %t, actual: %t", tc.filename, tc.expected, actual)
+		}
+	}
+}
+
+func TestNamespaceFromPath(t *testing.T) {
+	testcases := []struct {
+		path     string
+		basedir  string
+		expected string
+	}{
+		{
+			path:     filepath.Join("secrets", "foo.yml"),
+			basedir:  "secrets",
+			expected: "foo",
+		},
+		{
+			path:     filepath.Join("secrets", "foo", "bar.yml"),
+			basedir:  "secrets",
+			expected: "foo/bar",
+		},
+		{
+			path:     filepath.Join("secrets", "foo", "bar.yml"),
+			basedir:  filepath.Join("secrets", "foo"),
+			expected: "bar",
+		},
+		{
+			path:     filepath.Join("secrets", "foo", "bar", "baz.yaml"),
+			basedir:  "secrets",
+			expected: "foo/bar/baz",
+		},
+	}
+
+	for _, tc := range testcases {
+		actual := NamespaceFromPath(tc.path, tc.basedir)
+
+		if actual != tc.expected {
+			t.Errorf("Namespace does not match. expected: %q, actual: %q", tc.expected, actual)
+		}
+	}
+}
+
+func TestListYAMLFiles(t *testing.T) {
+	dirname := filepath.Join("..", "testdata", "foo")
+	expected := []string{
+		filepath.Join("..", "testdata", "foo", "bar", "test_valid.yaml"),
+		filepath.Join("..", "testdata", "foo", "test.yml"),
+	}
+
+	actual, err := ListYAMLFiles(dirname)
+	if err != nil {
+		t.Errorf("Error should not raised. err: %s", err)
+	}
+
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("YAML file list is wrong. expected: %q, actual: %q", expected, actual)
 	}
 }
 
