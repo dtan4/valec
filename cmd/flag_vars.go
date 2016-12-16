@@ -16,4 +16,5 @@ var (
 	dryRun         bool
 	output         string
 	override       bool
+	quote          bool
 )
