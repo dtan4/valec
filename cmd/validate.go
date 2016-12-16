@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/secret"
@@ -21,21 +23,22 @@ var validateCmd = &cobra.Command{
 		}
 		dirname := args[0]
 
-		files, err := util.ListYAMLFiles(dirname)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
-		}
-
-		for _, file := range files {
-			if err := validateFile(file); err != nil {
-				return errors.Wrapf(err, "Failed to validate secrets. filename=%s", file)
-			}
+		if err := filepath.Walk(dirname, validateWalkFunc); err != nil {
+			return errors.Wrapf(err, "Failed to validate files in directory. dirname=%s", dirname)
 		}
 
 		fmt.Println("All secrets are valid.")
 
 		return nil
 	},
+}
+
+func validateWalkFunc(path string, info os.FileInfo, e error) error {
+	if !util.IsSecretFile(path) {
+		return nil
+	}
+
+	return validateFile(path)
 }
 
 func validateFile(filename string) error {
