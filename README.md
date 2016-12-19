@@ -131,7 +131,8 @@ Encrypt secret
 With `--add FILE` flag, encrypted secret will be added to the specified file.
 
 ```bash
-$ valec encrypt NAME=awesome
+$ valec encrypt NAME=awesome DATABASE_URL=postgres://example.com/dbname
+AQECAHi1osu8IsEnPMo1...
 AQECAHi1osu8IsEnPMo1...
 
 $ valec encrypt NAME=awesome --add secrets.yml
