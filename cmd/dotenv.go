@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -41,6 +42,8 @@ var dotenvCmd = &cobra.Command{
 
 		if _, err := os.Stat(dotenvSampleName); err != nil {
 			if os.IsNotExist(err) {
+				fmt.Fprintf(os.Stderr, "%s does not exist. Dumping all secrets...\n", dotenvSampleName)
+
 				dotenv, err2 = dumpAll(secrets, quote)
 				if err2 != nil {
 					return errors.Wrap(err, "Failed to dump all secrets.")
