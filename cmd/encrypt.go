@@ -13,27 +13,34 @@ import (
 
 // encryptCmd represents the encrypt command
 var encryptCmd = &cobra.Command{
-	Use:   "encrypt KEY=VALUE",
+	Use:   "encrypt KEY1=VALUE1 [KEY2=VALUE2 ...]",
 	Short: "Encrypt secret",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
+		if len(args) < 1 {
 			return errors.New("Please specify KEY=VALUE.")
 		}
-		keyValue := args[0]
 
-		ss := strings.SplitN(keyValue, "=", 2)
-		if len(ss) < 2 {
-			return errors.Errorf("Given argument is invalid format, should be KEY=VALUE. argument=%q", keyValue)
-		}
-		key, value := ss[0], ss[1]
+		newSecretMap := map[string]string{}
 
-		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to encrypt.")
+		for _, arg := range args {
+			ss := strings.SplitN(arg, "=", 2)
+			if len(ss) < 2 {
+				return errors.Errorf("Given argument is invalid format, should be KEY=VALUE. argument=%q", arg)
+			}
+			key, value := ss[0], ss[1]
+
+			cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+			if err != nil {
+				return errors.Wrapf(err, "Failed to encrypt.")
+			}
+
+			newSecretMap[key] = cipherText
 		}
 
 		if secretFile == "" {
-			fmt.Println(cipherText)
+			for _, v := range newSecretMap {
+				fmt.Println(v)
+			}
 		} else {
 			secretMap := map[string]string{}
 
@@ -46,7 +53,9 @@ var encryptCmd = &cobra.Command{
 				secretMap = secrets.ListToMap()
 			}
 
-			secretMap[key] = cipherText
+			for k, v := range newSecretMap {
+				secretMap[k] = v
+			}
 			newSecrets := secret.MapToList(secretMap)
 
 			if err := newSecrets.SaveAsYAML(secretFile); err != nil {
