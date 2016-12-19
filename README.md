@@ -59,6 +59,16 @@ Valec enables you to manage application secrets in your favorite VCS.
 
 ## Usage
 
+### `valec dotenv`
+
+Generate `.env` using `.env.sample` if exists. This command is equivalent to `valec dump --template .env.sample --out .env`.
+
+```bash
+$ valec dotenv
+$ cat .env
+HOGE=fuga
+```
+
 ### `valec dump`
 
 Dump secrets in dotenv format
