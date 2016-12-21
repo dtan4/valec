@@ -1,8 +1,8 @@
-hash: a5b49a633fd49dc7bcab4a9571e718adcb89df9801620ada098225cb45325ba8
-updated: 2016-12-02T15:25:47.606764506+09:00
+hash: cebef35f679931043721f88264f4a686460613fc817d1c772b76ab70e4f44b4d
+updated: 2016-12-21T15:02:24.020783186+09:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 918c42e2bcdb277aa821401c906e88254501bdf4
+  version: 83d2e4131e326025fac43eef89873b340f4cc8c0
   subpackages:
   - aws
   - aws/awserr
@@ -16,10 +16,10 @@ imports:
   - aws/credentials/stscreds
   - aws/defaults
   - aws/ec2metadata
+  - aws/endpoints
   - aws/request
   - aws/session
   - aws/signer/v4
-  - private/endpoints
   - private/protocol
   - private/protocol/json/jsonutil
   - private/protocol/jsonrpc
@@ -29,12 +29,14 @@ imports:
   - private/protocol/xml/xmlutil
   - private/waiter
   - service/dynamodb
+  - service/dynamodb/dynamodbiface
   - service/kms
+  - service/kms/kmsiface
   - service/sts
 - name: github.com/fatih/color
   version: dea9d3a26a087187530244679c1cfb3a42937794
 - name: github.com/go-ini/ini
-  version: 6e4869b434bd001f6983749881c7ead3545887d8
+  version: 2ba15ac2dc9cdf88c110ec2dc0ced7fa45f5678c
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
@@ -46,13 +48,13 @@ imports:
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/spf13/cobra
-  version: 9495bc009a56819bdb0ddbc1a373e29c140bc674
+  version: b62566898a99f2db9c68ed0026aa0a052e59678d
 - name: github.com/spf13/pflag
-  version: 5ccb023bc27df288a957c5e994cd44fd19619465
+  version: 25f8b5b07aece3207895bf19f7ab517eb3b22a40
 - name: golang.org/x/sys
-  version: d5645953809d8b4752afb2c3224b1f1ad73dfa70
+  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
   subpackages:
   - unix
 - name: gopkg.in/yaml.v2
-  version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
+  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
 testImports: []

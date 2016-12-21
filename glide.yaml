@@ -2,7 +2,7 @@ package: github.com/dtan4/valec
 import:
 - package: github.com/spf13/cobra
 - package: github.com/aws/aws-sdk-go
-  version: ~1.5.10
+  version: ~1.6.6
   subpackages:
   - aws
   - aws/session
