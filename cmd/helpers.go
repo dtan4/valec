@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Songmu/prompter"
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/secret"
 	"github.com/pkg/errors"
@@ -80,7 +81,7 @@ func dumpWithTemplate(secrets secret.Secrets, quote bool) ([]string, error) {
 	return dotenv, nil
 }
 
-func scanFromStdin(r io.Reader) []string {
+func scanLines(r io.Reader) []string {
 	lines := []string{}
 	sc := bufio.NewScanner(r)
 
@@ -89,4 +90,8 @@ func scanFromStdin(r io.Reader) []string {
 	}
 
 	return lines
+}
+
+func scanNoEcho(key string) string {
+	return prompter.Password(key)
 }
