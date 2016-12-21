@@ -13,8 +13,18 @@ import (
 
 // encryptCmd represents the encrypt command
 var encryptCmd = &cobra.Command{
-	Use:   "encrypt KEY1=VALUE1 [KEY2=VALUE2 ...]",
+	Use:   "encrypt [KEY1=VALUE1 [KEY2=VALUE2 ...]] [-]",
 	Short: "Encrypt secret",
+	Long: `Encrypt secret
+
+Read from command line arguments:
+  $ valec encrypt KEY1=VALUE1 KEY2=VALUE2
+
+Read from stdin:
+  $ cat .env
+  KEY1=VALUE1
+  KEY2=VALUE2
+  $ cat .env | valec encrypt -`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return errors.New("Please specify KEY=VALUE.")
