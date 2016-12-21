@@ -30,22 +30,22 @@ Read from stdin:
 			return errors.New("Please specify KEY=VALUE.")
 		}
 
-		newSecretMap := map[string]string{}
+		secretMap := map[string]string{}
 		var err error
 
 		if args[0] == "-" {
-			newSecretMap, err = readFromStdin()
+			secretMap, err = readFromStdin()
 			if err != nil {
 				return errors.Wrap(err, "Failed to read secret from stdin.")
 			}
 		} else {
 			if interactive {
-				newSecretMap, err = readFromArgsInteractive(args)
+				secretMap, err = readFromArgsInteractive(args)
 				if err != nil {
 					return errors.Wrap(err, "Failed to read secret from args.")
 				}
 			} else {
-				newSecretMap, err = readFromArgs(args)
+				secretMap, err = readFromArgs(args)
 				if err != nil {
 					return errors.Wrap(err, "Failed to read secret from args.")
 				}
@@ -53,33 +53,45 @@ Read from stdin:
 		}
 
 		if secretFile == "" {
-			for _, v := range newSecretMap {
-				fmt.Println(v)
-			}
+			flushToStdout(secretMap)
 		} else {
-			secretMap := map[string]string{}
-
-			if _, err := os.Stat(secretFile); err == nil {
-				secrets, err2 := secret.LoadFromYAML(secretFile)
-				if err2 != nil {
-					return errors.Wrapf(err2, "Failed to load local secret file. filename=%s", secretFile)
-				}
-
-				secretMap = secrets.ListToMap()
-			}
-
-			for k, v := range newSecretMap {
-				secretMap[k] = v
-			}
-			newSecrets := secret.MapToList(secretMap)
-
-			if err := newSecrets.SaveAsYAML(secretFile); err != nil {
-				return errors.Wrapf(err, "Failed to update local secret file. filename=%s", secretFile)
+			if err := flushToFile(secretMap, secretFile); err != nil {
+				return errors.Wrapf(err, "Failed to flush secrets to file. filename=%s", secretFile)
 			}
 		}
 
 		return nil
 	},
+}
+
+func flushToFile(secretMap map[string]string, filename string) error {
+	newSecretMap := map[string]string{}
+
+	if _, err := os.Stat(secretFile); err == nil {
+		secrets, err2 := secret.LoadFromYAML(secretFile)
+		if err2 != nil {
+			return errors.Wrapf(err2, "Failed to load local secret file. filename=%s", secretFile)
+		}
+
+		newSecretMap = secrets.ListToMap()
+	}
+
+	for k, v := range secretMap {
+		newSecretMap[k] = v
+	}
+	newSecrets := secret.MapToList(newSecretMap)
+
+	if err := newSecrets.SaveAsYAML(secretFile); err != nil {
+		return errors.Wrapf(err, "Failed to update local secret file. filename=%s", secretFile)
+	}
+
+	return nil
+}
+
+func flushToStdout(secretMap map[string]string) {
+	for _, v := range secretMap {
+		fmt.Println(v)
+	}
 }
 
 func readFromStdin() (map[string]string, error) {
