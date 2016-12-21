@@ -151,6 +151,16 @@ $ cat secrets.yml
   value: AQECAHi1osu8IsEnPMo1...
 ```
 
+Secrets can also be read from stdin using dash (`-`).
+
+```bash
+$ cat .env
+NAME=awesome
+DATABASE_URL=postgres://example.com/dbname
+
+$ cat .env | valec encrypt -
+```
+
 ### `valec exec`
 
 Execute commands using stored secrets

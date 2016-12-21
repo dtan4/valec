@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -77,4 +78,15 @@ func dumpWithTemplate(secrets secret.Secrets, quote bool) ([]string, error) {
 	}
 
 	return dotenv, nil
+}
+
+func scanFromStdin(r io.Reader) []string {
+	lines := []string{}
+	sc := bufio.NewScanner(r)
+
+	for sc.Scan() {
+		lines = append(lines, sc.Text())
+	}
+
+	return lines
 }
