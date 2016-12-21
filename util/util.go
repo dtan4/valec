@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Songmu/prompter"
 	"github.com/pkg/errors"
 )
 
@@ -84,6 +85,11 @@ func ScanLines(r io.Reader) []string {
 	}
 
 	return lines
+}
+
+// ScanNoecho reads password without printing password text in console
+func ScanNoecho(key string) string {
+	return prompter.Password(key)
 }
 
 // WriteFile writes body to file
