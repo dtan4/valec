@@ -1,3 +1,13 @@
+# [v0.4.0](https://github.com/dtan4/s3url/releases/tag/v0.4.0) (2016-12-21)
+
+## Features
+
+- Interactive encryption mode (`valec encrypt -i KEY1 KEY2`) [#34](https://github.com/dtan4/valec/pull/34)
+- Use aws-sdk-go 1.6.x [#33](https://github.com/dtan4/valec/pull/33)
+- Encrypt secrets from stdin [#32](https://github.com/dtan4/valec/pull/32)
+- Add `valec dotenv` command [#31](https://github.com/dtan4/valec/pull/31)
+- Encrypt multiple secrets at once (`valec encrypt KEY1=VALUE1 KEY2=VALUE2`) [#30](https://github.com/dtan4/valec/pull/30)
+
 # [v0.3.2](https://github.com/dtan4/s3url/releases/tag/v0.3.2) (2016-12-16)
 
 ## Features
