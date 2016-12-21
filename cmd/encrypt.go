@@ -149,12 +149,7 @@ func readFromArgsInteractive(args []string) (map[string]string, error) {
 
 	for _, arg := range args {
 		key := arg
-		fmt.Printf("%s: ", arg)
-
-		value, err := scanNoEcho()
-		if err != nil {
-			return map[string]string{}, errors.Wrap(err, "Failed to read secret value.")
-		}
+		value := scanNoEcho(key)
 
 		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
 		if err != nil {

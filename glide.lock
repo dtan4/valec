@@ -1,5 +1,5 @@
-hash: 1c2dca550c8df704be8e0b82314a7ee5903c306479ca2c1fb7d4104638c197fe
-updated: 2016-12-21T15:09:49.827385065+09:00
+hash: 43e17552c53a95a4d5528c678cd3642d2eccb42d0935f9fdb508d6dfe68843d9
+updated: 2016-12-21T15:58:54.561789331+09:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 83d2e4131e326025fac43eef89873b340f4cc8c0
@@ -49,10 +49,16 @@ imports:
   version: 30a891c33c7cde7b02a981314b4228ec99380cca
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
+- name: github.com/Songmu/prompter
+  version: b5721e8d556682bcef33262731d98a39dee14dc4
 - name: github.com/spf13/cobra
   version: b62566898a99f2db9c68ed0026aa0a052e59678d
 - name: github.com/spf13/pflag
   version: 25f8b5b07aece3207895bf19f7ab517eb3b22a40
+- name: golang.org/x/crypto
+  version: d8e61c69ab46ca38328da2f4995abaf93b252290
+  subpackages:
+  - ssh/terminal
 - name: golang.org/x/sys
   version: d75a52659825e75fff6158388dddc6a5b04f9ba5
   subpackages:

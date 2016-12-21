@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Songmu/prompter"
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/secret"
-	"github.com/howeyc/gopass"
 	"github.com/pkg/errors"
 )
 
@@ -92,11 +92,6 @@ func scanLines(r io.Reader) []string {
 	return lines
 }
 
-func scanNoEcho() (string, error) {
-	pass, err := gopass.GetPasswd()
-	if err != nil {
-		return "", errors.Wrap(err, "Failed to read secret value.")
-	}
-
-	return string(pass), nil
+func scanNoEcho(key string) string {
+	return prompter.Password(key)
 }
