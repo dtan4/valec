@@ -22,19 +22,37 @@ var encryptCmd = &cobra.Command{
 
 		newSecretMap := map[string]string{}
 
-		for _, arg := range args {
-			ss := strings.SplitN(arg, "=", 2)
-			if len(ss) < 2 {
-				return errors.Errorf("Given argument is invalid format, should be KEY=VALUE. argument=%q", arg)
-			}
-			key, value := ss[0], ss[1]
+		if args[0] == "-" {
+			lines := scanFromStdin(os.Stdin)
+			for _, line := range lines {
+				ss := strings.SplitN(line, "=", 2)
+				if len(ss) < 2 {
+					continue
+				}
+				key, value := ss[0], ss[1]
 
-			cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
-			if err != nil {
-				return errors.Wrapf(err, "Failed to encrypt.")
-			}
+				cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+				if err != nil {
+					return errors.Wrapf(err, "Failed to encrypt.")
+				}
 
-			newSecretMap[key] = cipherText
+				newSecretMap[key] = cipherText
+			}
+		} else {
+			for _, arg := range args {
+				ss := strings.SplitN(arg, "=", 2)
+				if len(ss) < 2 {
+					return errors.Errorf("Given argument is invalid format, should be KEY=VALUE. argument=%q", arg)
+				}
+				key, value := ss[0], ss[1]
+
+				cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+				if err != nil {
+					return errors.Wrapf(err, "Failed to encrypt.")
+				}
+
+				newSecretMap[key] = cipherText
+			}
 		}
 
 		if secretFile == "" {
