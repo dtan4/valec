@@ -2,12 +2,14 @@ package util
 
 import (
 	"bufio"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/Songmu/prompter"
 	"github.com/pkg/errors"
 )
 
@@ -71,6 +73,23 @@ func ListYAMLFiles(dirname string) ([]string, error) {
 	}
 
 	return files, nil
+}
+
+// ScanLines reads text stream and return
+func ScanLines(r io.Reader) []string {
+	lines := []string{}
+	sc := bufio.NewScanner(r)
+
+	for sc.Scan() {
+		lines = append(lines, sc.Text())
+	}
+
+	return lines
+}
+
+// ScanNoecho reads password without printing password text in console
+func ScanNoecho(key string) string {
+	return prompter.Password(key)
 }
 
 // WriteFile writes body to file

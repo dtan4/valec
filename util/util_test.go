@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"io"
 	"io/ioutil"
 	"os"
@@ -120,6 +121,23 @@ func TestListYAMLFiles(t *testing.T) {
 
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("YAML file list is wrong. expected: %q, actual: %q", expected, actual)
+	}
+}
+
+func TestScanLines(t *testing.T) {
+	body := `FOO=bar
+BAZ=1
+HOGE=fuga`
+	r := bytes.NewBufferString(body)
+	expected := []string{
+		"FOO=bar",
+		"BAZ=1",
+		"HOGE=fuga",
+	}
+
+	actual := ScanLines(r)
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("Lines are different. expected: %q, actual: %q", expected, actual)
 	}
 }
 

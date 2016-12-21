@@ -7,6 +7,7 @@ import (
 
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/secret"
+	"github.com/dtan4/valec/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -103,7 +104,7 @@ func flushToStdout(secretMap map[string]string) {
 
 func readFromStdin() (map[string]string, error) {
 	secretMap := map[string]string{}
-	lines := scanLines(os.Stdin)
+	lines := util.ScanLines(os.Stdin)
 
 	for _, line := range lines {
 		ss := strings.SplitN(line, "=", 2)
@@ -149,7 +150,7 @@ func readFromArgsInteractive(args []string) (map[string]string, error) {
 
 	for _, arg := range args {
 		key := arg
-		value := scanNoEcho(key)
+		value := util.ScanNoecho(key)
 
 		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
 		if err != nil {
