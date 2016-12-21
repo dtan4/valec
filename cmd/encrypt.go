@@ -31,37 +31,24 @@ Read from stdin:
 		}
 
 		newSecretMap := map[string]string{}
+		var err error
 
 		if args[0] == "-" {
-			lines := scanFromStdin(os.Stdin)
-			for _, line := range lines {
-				ss := strings.SplitN(line, "=", 2)
-				if len(ss) < 2 {
-					continue
-				}
-				key, value := ss[0], ss[1]
-
-				cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
-				if err != nil {
-					return errors.Wrapf(err, "Failed to encrypt.")
-				}
-
-				newSecretMap[key] = cipherText
+			newSecretMap, err = readFromStdin()
+			if err != nil {
+				return errors.Wrap(err, "Failed to read secret from stdin.")
 			}
 		} else {
-			for _, arg := range args {
-				ss := strings.SplitN(arg, "=", 2)
-				if len(ss) < 2 {
-					return errors.Errorf("Given argument is invalid format, should be KEY=VALUE. argument=%q", arg)
-				}
-				key, value := ss[0], ss[1]
-
-				cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+			if interactive {
+				newSecretMap, err = readFromArgsInteractive(args)
 				if err != nil {
-					return errors.Wrapf(err, "Failed to encrypt.")
+					return errors.Wrap(err, "Failed to read secret from args.")
 				}
-
-				newSecretMap[key] = cipherText
+			} else {
+				newSecretMap, err = readFromArgs(args)
+				if err != nil {
+					return errors.Wrap(err, "Failed to read secret from args.")
+				}
 			}
 		}
 
@@ -95,8 +82,75 @@ Read from stdin:
 	},
 }
 
+func readFromStdin() (map[string]string, error) {
+	secretMap := map[string]string{}
+	lines := scanLines(os.Stdin)
+
+	for _, line := range lines {
+		ss := strings.SplitN(line, "=", 2)
+		if len(ss) < 2 {
+			continue
+		}
+		key, value := ss[0], ss[1]
+
+		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+		if err != nil {
+			return map[string]string{}, errors.Wrapf(err, "Failed to encrypt secret. key=%s", key)
+		}
+
+		secretMap[key] = cipherText
+	}
+
+	return secretMap, nil
+}
+
+func readFromArgs(args []string) (map[string]string, error) {
+	secretMap := map[string]string{}
+
+	for _, arg := range args {
+		ss := strings.SplitN(arg, "=", 2)
+		if len(ss) < 2 {
+			return map[string]string{}, errors.Errorf("Given argument is invalid format, should be KEY=VALUE. argument=%q", arg)
+		}
+		key, value := ss[0], ss[1]
+
+		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+		if err != nil {
+			return map[string]string{}, errors.Wrapf(err, "Failed to encrypt secret. key=%s", key)
+		}
+
+		secretMap[key] = cipherText
+	}
+
+	return secretMap, nil
+}
+
+func readFromArgsInteractive(args []string) (map[string]string, error) {
+	secretMap := map[string]string{}
+
+	for _, arg := range args {
+		key := arg
+		fmt.Printf("%s: ", arg)
+
+		value, err := scanNoEcho()
+		if err != nil {
+			return map[string]string{}, errors.Wrap(err, "Failed to read secret value.")
+		}
+
+		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+		if err != nil {
+			return map[string]string{}, errors.Wrapf(err, "Failed to encrypt secret. key=%s", key)
+		}
+
+		secretMap[key] = cipherText
+	}
+
+	return secretMap, nil
+}
+
 func init() {
 	RootCmd.AddCommand(encryptCmd)
 
 	encryptCmd.Flags().StringVar(&secretFile, "add", "", "Add to local secret file")
+	encryptCmd.Flags().BoolVarP(&interactive, "interactive", "i", false, "Interactive value input")
 }

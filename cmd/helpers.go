@@ -9,6 +9,7 @@ import (
 
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/secret"
+	"github.com/howeyc/gopass"
 	"github.com/pkg/errors"
 )
 
@@ -80,7 +81,7 @@ func dumpWithTemplate(secrets secret.Secrets, quote bool) ([]string, error) {
 	return dotenv, nil
 }
 
-func scanFromStdin(r io.Reader) []string {
+func scanLines(r io.Reader) []string {
 	lines := []string{}
 	sc := bufio.NewScanner(r)
 
@@ -89,4 +90,13 @@ func scanFromStdin(r io.Reader) []string {
 	}
 
 	return lines
+}
+
+func scanNoEcho() (string, error) {
+	pass, err := gopass.GetPasswd()
+	if err != nil {
+		return "", errors.Wrap(err, "Failed to read secret value.")
+	}
+
+	return string(pass), nil
 }

@@ -1,5 +1,5 @@
-hash: cebef35f679931043721f88264f4a686460613fc817d1c772b76ab70e4f44b4d
-updated: 2016-12-21T15:02:24.020783186+09:00
+hash: 1c2dca550c8df704be8e0b82314a7ee5903c306479ca2c1fb7d4104638c197fe
+updated: 2016-12-21T15:09:49.827385065+09:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 83d2e4131e326025fac43eef89873b340f4cc8c0
@@ -37,6 +37,8 @@ imports:
   version: dea9d3a26a087187530244679c1cfb3a42937794
 - name: github.com/go-ini/ini
   version: 2ba15ac2dc9cdf88c110ec2dc0ced7fa45f5678c
+- name: github.com/howeyc/gopass
+  version: f5387c492211eb133053880d23dfae62aa14123d
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath

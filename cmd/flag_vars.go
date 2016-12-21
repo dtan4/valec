@@ -14,6 +14,7 @@ var (
 	secretFile     string
 	dotenvTemplate string
 	dryRun         bool
+	interactive    bool
 	output         string
 	override       bool
 	quote          bool
