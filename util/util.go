@@ -2,6 +2,7 @@ package util
 
 import (
 	"bufio"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -71,6 +72,18 @@ func ListYAMLFiles(dirname string) ([]string, error) {
 	}
 
 	return files, nil
+}
+
+// ScanLines reads text stream and return
+func ScanLines(r io.Reader) []string {
+	lines := []string{}
+	sc := bufio.NewScanner(r)
+
+	for sc.Scan() {
+		lines = append(lines, sc.Text())
+	}
+
+	return lines
 }
 
 // WriteFile writes body to file
