@@ -13,7 +13,7 @@ import (
 
 // encryptCmd represents the encrypt command
 var encryptCmd = &cobra.Command{
-	Use:   "encrypt [KEY1=VALUE1 [KEY2=VALUE2 ...]] [-]",
+	Use:   "encrypt [KEY1=VALUE1 [KEY2=VALUE2 ...]] [-] [-i KEY1 [KEY2 ...]]",
 	Short: "Encrypt secret",
 	Long: `Encrypt secret
 
@@ -24,7 +24,13 @@ Read from stdin:
   $ cat .env
   KEY1=VALUE1
   KEY2=VALUE2
-  $ cat .env | valec encrypt -`,
+  $ cat .env | valec encrypt -
+
+Enter secret value interactively:
+  $ valec encrypt -i KEY1 KEY2
+  KEY1:
+  KEY2:
+`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return errors.New("Please specify KEY=VALUE.")
@@ -40,6 +46,7 @@ Read from stdin:
 			}
 		} else {
 			if interactive {
+				fmt.Println("Entered secret value will be hidden.")
 				secretMap, err = readFromArgsInteractive(args)
 				if err != nil {
 					return errors.Wrap(err, "Failed to read secret from args.")
