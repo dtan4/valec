@@ -278,8 +278,9 @@ func TestSaveAsYAML(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	filename := filepath.Join(dir, "secret.yaml")
+	kmsKey := "valec-qa"
 
-	if err := secrets.SaveAsYAML(filename); err != nil {
+	if err := secrets.SaveAsYAML(filename, kmsKey); err != nil {
 		t.Fatalf("Error should not be raised. err: %s", err)
 	}
 

@@ -96,8 +96,13 @@ func (ss Secrets) ListToMap() map[string]string {
 }
 
 // SaveAsYAML saves secrets to local secret file
-func (ss Secrets) SaveAsYAML(filename string) error {
-	body, err := yaml.Marshal(ss)
+func (ss Secrets) SaveAsYAML(filename, kmsKey string) error {
+	y := &YAML{
+		KMSKey:  kmsKey,
+		Secrets: ss,
+	}
+
+	body, err := yaml.Marshal(y)
 	if err != nil {
 		return errors.Wrap(err, "Failed to convert secrets as YAML.")
 	}

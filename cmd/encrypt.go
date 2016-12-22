@@ -101,7 +101,7 @@ func flushToFile(secretMap map[string]string, filename, kmsKey string) error {
 	}
 	newSecrets := secret.MapToList(newSecretMap)
 
-	if err := newSecrets.SaveAsYAML(filename); err != nil {
+	if err := newSecrets.SaveAsYAML(filename, kmsKey); err != nil {
 		return errors.Wrapf(err, "Failed to update local secret file. filename=%s", filename)
 	}
 
