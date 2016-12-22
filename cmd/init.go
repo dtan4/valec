@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dtan4/valec/aws"
+	"github.com/dtan4/valec/secret"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -21,24 +22,24 @@ These resources will be created:
 }
 
 func doInit(cmd *cobra.Command, args []string) error {
-	keyExists, err := aws.KMS.KeyExists(rootOpts.keyAlias)
+	keyExists, err := aws.KMS.KeyExists(secret.DefaultKMSKey)
 	if err != nil {
 		return errors.Wrap(err, "Failed to check existence of key alias.")
 	}
 
 	if keyExists {
-		fmt.Printf("Key %q alreadly exists.\n", rootOpts.keyAlias)
+		fmt.Printf("Key %q alreadly exists.\n", secret.DefaultKMSKey)
 	} else {
 		keyID, err := aws.KMS.CreateKey()
 		if err != nil {
 			return errors.Wrap(err, "Failed to create new key.")
 		}
 
-		if err := aws.KMS.CreateKeyAlias(keyID, rootOpts.keyAlias); err != nil {
+		if err := aws.KMS.CreateKeyAlias(keyID, secret.DefaultKMSKey); err != nil {
 			return errors.Wrap(err, "Failed to attach alias to key.")
 		}
 
-		fmt.Printf("Key %s successfully created!\n", rootOpts.keyAlias)
+		fmt.Printf("Key %s successfully created!\n", secret.DefaultKMSKey)
 	}
 
 	tableExists, err := aws.DynamoDB.TableExists(rootOpts.tableName)

@@ -8,6 +8,11 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const (
+	// DefaultKMSKey represents default KMS key alias
+	DefaultKMSKey = "valec"
+)
+
 // Secret represents key=value pair
 type Secret struct {
 	Key   string `yaml:"key"`
