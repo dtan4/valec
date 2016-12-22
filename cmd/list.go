@@ -24,13 +24,17 @@ Encrypted values are decrypted and printed as plain text.`,
 	RunE: doList,
 }
 
+var listOpts = struct {
+	secretFile string
+}{}
+
 func doList(cmd *cobra.Command, args []string) error {
 	var (
 		secrets []*secret.Secret
 		err     error
 	)
 
-	if secretFile == "" {
+	if listOpts.secretFile == "" {
 		if len(args) != 1 {
 			return errors.New("Please specify namespace or secret file (-f FILE).")
 		}
@@ -45,9 +49,9 @@ func doList(cmd *cobra.Command, args []string) error {
 			return errors.Errorf("Namespace %s does not exist.", namespace)
 		}
 	} else {
-		secrets, err = secret.LoadFromYAML(secretFile)
+		secrets, err = secret.LoadFromYAML(listOpts.secretFile)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to load secrets from file. filename=%s", secretFile)
+			return errors.Wrapf(err, "Failed to load secrets from file. filename=%s", listOpts.secretFile)
 		}
 	}
 
@@ -85,5 +89,5 @@ func longestKeyLength(secrets []*secret.Secret) int {
 func init() {
 	RootCmd.AddCommand(listCmd)
 
-	listCmd.Flags().StringVarP(&secretFile, "file", "f", "", "Secret file")
+	listCmd.Flags().StringVarP(&listOpts.secretFile, "file", "f", "", "Secret file")
 }

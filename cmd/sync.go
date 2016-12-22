@@ -18,6 +18,10 @@ var syncCmd = &cobra.Command{
 	RunE:  doSync,
 }
 
+var syncOpts = struct {
+	dryRun bool
+}{}
+
 func doSync(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
 		return errors.New("Please specify secret directory.")
@@ -72,7 +76,7 @@ func syncFile(filename, dirname string) error {
 			}
 		}
 
-		if !dryRun {
+		if !syncOpts.dryRun {
 			if err := aws.DynamoDB.Delete(tableName, namespace, deleted); err != nil {
 				return errors.Wrapf(err, "Failed to delete secrets. namespace=%s", namespace)
 			}
@@ -91,7 +95,7 @@ func syncFile(filename, dirname string) error {
 			}
 		}
 
-		if !dryRun {
+		if !syncOpts.dryRun {
 			if err := aws.DynamoDB.Insert(tableName, namespace, updated); err != nil {
 				return errors.Wrapf(err, "Failed to insert secrets. namespace=%s")
 			}
@@ -110,7 +114,7 @@ func syncFile(filename, dirname string) error {
 			}
 		}
 
-		if !dryRun {
+		if !syncOpts.dryRun {
 			if err := aws.DynamoDB.Insert(tableName, namespace, added); err != nil {
 				return errors.Wrapf(err, "Failed to insert secrets. namespace=%s")
 			}
@@ -125,5 +129,5 @@ func syncFile(filename, dirname string) error {
 func init() {
 	RootCmd.AddCommand(syncCmd)
 
-	syncCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Dry run")
+	syncCmd.Flags().BoolVar(&syncOpts.dryRun, "dry-run", false, "Dry run")
 }

@@ -17,6 +17,13 @@ var dumpCmd = &cobra.Command{
 	RunE:  doDump,
 }
 
+var dumpOpts = struct {
+	dotenvTemplate string
+	override       bool
+	output         string
+	quote          bool
+}{}
+
 func doDump(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return errors.New("Please specify namespace.")
@@ -34,31 +41,31 @@ func doDump(cmd *cobra.Command, args []string) error {
 
 	var dotenv []string
 
-	if dotenvTemplate == "" {
-		dotenv, err = dumpAll(secrets, quote)
+	if dumpOpts.dotenvTemplate == "" {
+		dotenv, err = dumpAll(secrets, dumpOpts.quote)
 		if err != nil {
 			return errors.Wrap(err, "Failed to dump all secrets.")
 		}
 	} else {
-		dotenv, err = dumpWithTemplate(secrets, quote)
+		dotenv, err = dumpWithTemplate(secrets, dumpOpts.quote, dumpOpts.dotenvTemplate, dumpOpts.override)
 		if err != nil {
 			return errors.Wrap(err, "Failed to dump secrets with dotenv template.")
 		}
 	}
 
-	if output == "" {
+	if dumpOpts.output == "" {
 		for _, line := range dotenv {
 			fmt.Println(line)
 		}
 	} else {
 		body := []byte(strings.Join(dotenv, "\n") + "\n")
-		if override {
-			if err := util.WriteFile(output, body); err != nil {
-				return errors.Wrapf(err, "Failed to write dotenv file. filename=%s", output)
+		if dumpOpts.override {
+			if err := util.WriteFile(dumpOpts.output, body); err != nil {
+				return errors.Wrapf(err, "Failed to write dotenv file. filename=%s", dumpOpts.output)
 			}
 		} else {
-			if err := util.WriteFileWithoutSection(output, body); err != nil {
-				return errors.Wrapf(err, "Failed to write dotenv file. filename=%s", output)
+			if err := util.WriteFileWithoutSection(dumpOpts.output, body); err != nil {
+				return errors.Wrapf(err, "Failed to write dotenv file. filename=%s", dumpOpts.output)
 			}
 		}
 	}
@@ -69,8 +76,8 @@ func doDump(cmd *cobra.Command, args []string) error {
 func init() {
 	RootCmd.AddCommand(dumpCmd)
 
-	dumpCmd.Flags().BoolVar(&override, "override", false, "Override values in existing template")
-	dumpCmd.Flags().StringVarP(&output, "output", "o", "", "File to flush dotenv")
-	dumpCmd.Flags().BoolVarP(&quote, "quote", "q", false, "Quote values")
-	dumpCmd.Flags().StringVarP(&dotenvTemplate, "template", "t", "", "Dotenv template")
+	dumpCmd.Flags().BoolVar(&dumpOpts.override, "override", false, "Override values in existing template")
+	dumpCmd.Flags().StringVarP(&dumpOpts.output, "output", "o", "", "File to flush dotenv")
+	dumpCmd.Flags().BoolVarP(&dumpOpts.quote, "quote", "q", false, "Quote values")
+	dumpCmd.Flags().StringVarP(&dumpOpts.dotenvTemplate, "template", "t", "", "Dotenv template")
 }

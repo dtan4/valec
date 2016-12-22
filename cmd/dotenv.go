@@ -23,6 +23,10 @@ var dotenvCmd = &cobra.Command{
 	RunE:  doDotenv,
 }
 
+var dotenvOpts = struct {
+	quote bool
+}{}
+
 func doDotenv(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return errors.New("Please specify namespace.")
@@ -47,7 +51,7 @@ func doDotenv(cmd *cobra.Command, args []string) error {
 		if os.IsNotExist(err) {
 			fmt.Fprintf(os.Stderr, "%s does not exist. Dumping all secrets...\n", dotenvSampleName)
 
-			dotenv, err2 = dumpAll(secrets, quote)
+			dotenv, err2 = dumpAll(secrets, dotenvOpts.quote)
 			if err2 != nil {
 				return errors.Wrap(err, "Failed to dump all secrets.")
 			}
@@ -55,7 +59,7 @@ func doDotenv(cmd *cobra.Command, args []string) error {
 			return errors.Wrapf(err, "Failed to get stat of dotenv template. filename=%s", dotenvSampleName)
 		}
 	} else {
-		dotenv, err2 = dumpWithTemplate(secrets, quote)
+		dotenv, err2 = dumpWithTemplate(secrets, dotenvOpts.quote, dotenvSampleName, false)
 		if err2 != nil {
 			return errors.Wrap(err, "Failed to dump secrets with dotenv template.")
 		}
@@ -71,4 +75,6 @@ func doDotenv(cmd *cobra.Command, args []string) error {
 
 func init() {
 	RootCmd.AddCommand(dotenvCmd)
+
+	dotenvCmd.Flags().BoolVarP(&dotenvOpts.quote, "quote", "q", false, "Quote values")
 }

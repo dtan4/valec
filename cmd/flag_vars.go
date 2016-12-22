@@ -8,14 +8,3 @@ var (
 	tableName string
 	region    string
 )
-
-// command-specific flag variable
-var (
-	secretFile     string
-	dotenvTemplate string
-	dryRun         bool
-	interactive    bool
-	output         string
-	override       bool
-	quote          bool
-)
