@@ -15,31 +15,37 @@ import (
 var syncCmd = &cobra.Command{
 	Use:   "sync SECRETDIR [NAMESPACE]",
 	Short: "Synchronize secrets between local file and DynamoDB",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("Please specify secret directory.")
-		}
-		dirname := args[0]
+	RunE:  doSync,
+}
 
-		files, err := util.ListYAMLFiles(dirname)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
-		}
+var syncOpts = struct {
+	dryRun bool
+}{}
 
-		for _, file := range files {
-			if err := syncFile(file, dirname); err != nil {
-				return errors.Wrapf(err, "Failed to synchronize file. filename=%s", file)
-			}
-		}
+func doSync(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.New("Please specify secret directory.")
+	}
+	dirname := args[0]
 
-		return nil
-	},
+	files, err := util.ListYAMLFiles(dirname)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
+	}
+
+	for _, file := range files {
+		if err := syncFile(file, dirname); err != nil {
+			return errors.Wrapf(err, "Failed to synchronize file. filename=%s", file)
+		}
+	}
+
+	return nil
 }
 
 func syncFile(filename, dirname string) error {
 	namespace := util.NamespaceFromPath(filename, dirname)
 
-	if noColor {
+	if rootOpts.noColor {
 		fmt.Println(namespace)
 	} else {
 		color.New(color.Bold).Println(namespace)
@@ -50,7 +56,7 @@ func syncFile(filename, dirname string) error {
 		return errors.Wrapf(err, "Failed to load secrets. filename=%s", filename)
 	}
 
-	dstSecrets, err := aws.DynamoDB.ListSecrets(tableName, namespace)
+	dstSecrets, err := aws.DynamoDB.ListSecrets(rootOpts.tableName, namespace)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to retrieve secrets. namespace=%s", namespace)
 	}
@@ -63,15 +69,15 @@ func syncFile(filename, dirname string) error {
 	if len(deleted) > 0 {
 		fmt.Printf("%  d secrets will be deleted.\n", len(deleted))
 		for _, secret := range deleted {
-			if noColor {
+			if rootOpts.noColor {
 				fmt.Printf("    - %s\n", secret.Key)
 			} else {
 				red.Printf("    - %s\n", secret.Key)
 			}
 		}
 
-		if !dryRun {
-			if err := aws.DynamoDB.Delete(tableName, namespace, deleted); err != nil {
+		if !syncOpts.dryRun {
+			if err := aws.DynamoDB.Delete(rootOpts.tableName, namespace, deleted); err != nil {
 				return errors.Wrapf(err, "Failed to delete secrets. namespace=%s", namespace)
 			}
 
@@ -82,15 +88,15 @@ func syncFile(filename, dirname string) error {
 	if len(updated) > 0 {
 		fmt.Printf("  %d secrets will be updated.\n", len(updated))
 		for _, secret := range updated {
-			if noColor {
+			if rootOpts.noColor {
 				fmt.Printf("    + %s\n", secret.Key)
 			} else {
 				yellow.Printf("    + %s\n", secret.Key)
 			}
 		}
 
-		if !dryRun {
-			if err := aws.DynamoDB.Insert(tableName, namespace, updated); err != nil {
+		if !syncOpts.dryRun {
+			if err := aws.DynamoDB.Insert(rootOpts.tableName, namespace, updated); err != nil {
 				return errors.Wrapf(err, "Failed to insert secrets. namespace=%s")
 			}
 
@@ -101,15 +107,15 @@ func syncFile(filename, dirname string) error {
 	if len(added) > 0 {
 		fmt.Printf("  %d secrets will be added.\n", len(added))
 		for _, secret := range added {
-			if noColor {
+			if rootOpts.noColor {
 				fmt.Printf("    + %s\n", secret.Key)
 			} else {
 				green.Printf("    + %s\n", secret.Key)
 			}
 		}
 
-		if !dryRun {
-			if err := aws.DynamoDB.Insert(tableName, namespace, added); err != nil {
+		if !syncOpts.dryRun {
+			if err := aws.DynamoDB.Insert(rootOpts.tableName, namespace, added); err != nil {
 				return errors.Wrapf(err, "Failed to insert secrets. namespace=%s")
 			}
 
@@ -123,5 +129,5 @@ func syncFile(filename, dirname string) error {
 func init() {
 	RootCmd.AddCommand(syncCmd)
 
-	syncCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Dry run")
+	syncCmd.Flags().BoolVar(&syncOpts.dryRun, "dry-run", false, "Dry run")
 }

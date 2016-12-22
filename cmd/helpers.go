@@ -30,7 +30,7 @@ func dumpAll(secrets secret.Secrets, quote bool) ([]string, error) {
 	return dotenv, nil
 }
 
-func dumpWithTemplate(secrets secret.Secrets, quote bool) ([]string, error) {
+func dumpWithTemplate(secrets secret.Secrets, quote bool, dotenvTemplate string, override bool) ([]string, error) {
 	fp, err := os.Open(dotenvTemplate)
 	if err != nil {
 		return []string{}, errors.Wrapf(err, "Failed to open dotenv template. filename=%s", dotenvTemplate)

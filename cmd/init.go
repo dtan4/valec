@@ -17,44 +17,46 @@ var initCmd = &cobra.Command{
 These resources will be created:
   - KMS key and alias
   - DynamoDB table`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		keyExists, err := aws.KMS.KeyExists(keyAlias)
+	RunE: doInit,
+}
+
+func doInit(cmd *cobra.Command, args []string) error {
+	keyExists, err := aws.KMS.KeyExists(rootOpts.keyAlias)
+	if err != nil {
+		return errors.Wrap(err, "Failed to check existence of key alias.")
+	}
+
+	if keyExists {
+		fmt.Printf("Key %q alreadly exists.\n", rootOpts.keyAlias)
+	} else {
+		keyID, err := aws.KMS.CreateKey()
 		if err != nil {
-			return errors.Wrap(err, "Failed to check existence of key alias.")
+			return errors.Wrap(err, "Failed to create new key.")
 		}
 
-		if keyExists {
-			fmt.Printf("Key %q alreadly exists.\n", keyAlias)
-		} else {
-			keyID, err := aws.KMS.CreateKey()
-			if err != nil {
-				return errors.Wrap(err, "Failed to create new key.")
-			}
-
-			if err := aws.KMS.CreateKeyAlias(keyID, keyAlias); err != nil {
-				return errors.Wrap(err, "Failed to attach alias to key.")
-			}
-
-			fmt.Printf("Key %s successfully created!\n", keyAlias)
+		if err := aws.KMS.CreateKeyAlias(keyID, rootOpts.keyAlias); err != nil {
+			return errors.Wrap(err, "Failed to attach alias to key.")
 		}
 
-		tableExists, err := aws.DynamoDB.TableExists(tableName)
-		if err != nil {
-			return errors.Wrap(err, "Failed to check existence of DynamoDB table.")
+		fmt.Printf("Key %s successfully created!\n", rootOpts.keyAlias)
+	}
+
+	tableExists, err := aws.DynamoDB.TableExists(rootOpts.tableName)
+	if err != nil {
+		return errors.Wrap(err, "Failed to check existence of DynamoDB table.")
+	}
+
+	if tableExists {
+		fmt.Printf("DynamoDB table %q alreadly exists.\n", rootOpts.tableName)
+	} else {
+		if err := aws.DynamoDB.CreateTable(rootOpts.tableName); err != nil {
+			return errors.Wrapf(err, "Failed to create DynamoDB table. table=%s", rootOpts.tableName)
 		}
 
-		if tableExists {
-			fmt.Printf("DynamoDB table %q alreadly exists.\n", tableName)
-		} else {
-			if err := aws.DynamoDB.CreateTable(tableName); err != nil {
-				return errors.Wrapf(err, "Failed to create DynamoDB table. table=%s", tableName)
-			}
+		fmt.Printf("DynamoDB table %s successfully created!\n", rootOpts.tableName)
+	}
 
-			fmt.Printf("DynamoDB table %s successfully created!\n", tableName)
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
