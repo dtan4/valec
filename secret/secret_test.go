@@ -292,40 +292,56 @@ func TestSaveAsYAML(t *testing.T) {
 	}
 }
 
-func TestLoadFromFromYAML_valid(t *testing.T) {
-	filepath := testdataPath("test_valid.yaml")
-	secrets, err := LoadFromYAML(filepath)
-	if err != nil {
-		t.Fatalf("Error should not be raised. error: %s", err)
-	}
-
-	expects := []struct {
-		key   string
-		value string
+func TestLoadFromYAML_valid(t *testing.T) {
+	testcases := []struct {
+		filename string
+		kmsKey   string
 	}{
-		{"FOO", "bar"},
-		{"BAZ", "1"},
-		{"QUX", "true"},
+		{
+			filename: "test_valid.yaml",
+			kmsKey:   "valec-qa",
+		},
+		{
+			filename: "test_no_kmskey.yaml",
+			kmsKey:   "",
+		},
 	}
 
-	if len(secrets) != len(expects) {
-		t.Fatalf("Secrets does not loaded correctly. expected length: %d, actual length: %d", len(expects), len(secrets))
+	expectedSecrets := Secrets{
+		&Secret{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Secret{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Secret{
+			Key:   "QUX",
+			Value: "true",
+		},
 	}
 
-	for i, secret := range secrets {
-		if secret.Key != expects[i].key {
-			t.Errorf("Secret key does not match. expected: %s, actual: %s", expects[i].key, secret.Key)
+	for _, tc := range testcases {
+		filepath := testdataPath(tc.filename)
+		kmsKey, secrets, err := LoadFromYAML(filepath)
+		if err != nil {
+			t.Fatalf("Error should not be raised. error: %s", err)
 		}
 
-		if secret.Value != expects[i].value {
-			t.Errorf("Secret value does not match. expected: %s, actual: %s", expects[i].value, secret.Value)
+		if kmsKey != tc.kmsKey {
+			t.Errorf("kmsKey does not match. expected: %s, actual: %s", tc.kmsKey, kmsKey)
+		}
+
+		if !reflect.DeepEqual(secrets, expectedSecrets) {
+			t.Errorf("Secrets does not match. expected: %v, actual: %v", expectedSecrets, secrets)
 		}
 	}
 }
 
-func TestLoadFromFromYAML_invalid(t *testing.T) {
+func TestLoadFromYAML_invalid(t *testing.T) {
 	filepath := testdataPath("test_invalid.yaml")
-	_, err := LoadFromYAML(filepath)
+	_, _, err := LoadFromYAML(filepath)
 	if err == nil {
 		t.Fatalf("Error should be raised. error: %s", err)
 	}
@@ -337,9 +353,9 @@ func TestLoadFromFromYAML_invalid(t *testing.T) {
 	}
 }
 
-func TestLoadFromFromYAML_notexist(t *testing.T) {
+func TestLoadFromYAML_notexist(t *testing.T) {
 	filepath := testdataPath("test_notexist.yaml")
-	_, err := LoadFromYAML(filepath)
+	_, _, err := LoadFromYAML(filepath)
 	if err == nil {
 		t.Fatalf("Error should be raised. error: %s", err)
 	}

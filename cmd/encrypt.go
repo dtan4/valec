@@ -76,7 +76,7 @@ func flushToFile(secretMap map[string]string, filename string) error {
 	newSecretMap := map[string]string{}
 
 	if _, err := os.Stat(secretFile); err == nil {
-		secrets, err2 := secret.LoadFromYAML(secretFile)
+		_, secrets, err2 := secret.LoadFromYAML(secretFile)
 		if err2 != nil {
 			return errors.Wrapf(err2, "Failed to load local secret file. filename=%s", secretFile)
 		}

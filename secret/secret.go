@@ -17,6 +17,12 @@ type Secret struct {
 // Secrets represents the array of Secret
 type Secrets []*Secret
 
+// YAML represents secret yaml structure
+type YAML struct {
+	KMSKey  string  `yaml:"kms_key"`
+	Secrets Secrets `yaml:"secrets"`
+}
+
 // Len returns the length of the array
 func (ss Secrets) Len() int {
 	return len(ss)
@@ -99,19 +105,19 @@ func (ss Secrets) SaveAsYAML(filename string) error {
 }
 
 // LoadFromYAML loads secrets from the given YAML file
-func LoadFromYAML(filename string) (Secrets, error) {
+func LoadFromYAML(filename string) (string, Secrets, error) {
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return Secrets{}, errors.Wrapf(err, "Failed to read secret file. filename=%s", filename)
+		return "", Secrets{}, errors.Wrapf(err, "Failed to read secret file. filename=%s", filename)
 	}
 
-	var secrets Secrets
+	var y YAML
 
-	if err := yaml.Unmarshal(body, &secrets); err != nil {
-		return Secrets{}, errors.Wrapf(err, "Failed to parse secret file as YAML. filename=%s", filename)
+	if err := yaml.Unmarshal(body, &y); err != nil {
+		return "", Secrets{}, errors.Wrapf(err, "Failed to parse secret file as YAML. filename=%s", filename)
 	}
 
-	return secrets, nil
+	return y.KMSKey, y.Secrets, nil
 }
 
 // MapToList converts map to secret list
