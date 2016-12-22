@@ -138,6 +138,7 @@ DATABASE_URL=postgres://prod.example.com/prod
 
 Encrypt secret
 
+With `--key KEY` flag, you can choose KMS key for encryption.
 With `--add FILE` flag, encrypted secret will be added to the specified file.
 
 ```bash
@@ -145,8 +146,10 @@ $ valec encrypt NAME=awesome DATABASE_URL=postgres://example.com/dbname
 AQECAHi1osu8IsEnPMo1...
 AQECAHi1osu8IsEnPMo1...
 
-$ valec encrypt NAME=awesome --add secrets.yml
+$ valec encrypt NAME=awesome --add secrets.yml --key valec-qa
 $ cat secrets.yml
+kms_key: valec-qa
+secrets:
 - key: NAME
   value: AQECAHi1osu8IsEnPMo1...
 ```
