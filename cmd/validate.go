@@ -15,25 +15,27 @@ import (
 var validateCmd = &cobra.Command{
 	Use:   "validate SECRETDIR",
 	Short: "Validate secrets in local files",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("Please specify secret directory.")
-		}
-		dirname := args[0]
+	RunE:  doValidate,
+}
 
-		files, err := util.ListYAMLFiles(dirname)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
-		}
+func doValidate(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.New("Please specify secret directory.")
+	}
+	dirname := args[0]
 
-		for _, file := range files {
-			if err := validateFile(file); err != nil {
-				return errors.Wrapf(err, "Failed to validate file. filename=%s", file)
-			}
-		}
+	files, err := util.ListYAMLFiles(dirname)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
+	}
 
-		return nil
-	},
+	for _, file := range files {
+		if err := validateFile(file); err != nil {
+			return errors.Wrapf(err, "Failed to validate file. filename=%s", file)
+		}
+	}
+
+	return nil
 }
 
 func validateFile(filename string) error {

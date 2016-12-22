@@ -32,53 +32,60 @@ Enter secret value interactively:
   KEY1:
   KEY2:
 `,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("Please specify KEY=VALUE.")
+	RunE: doEncrypt,
+}
+
+var encryptOpts = struct {
+	interactive bool
+	secretFile  string
+}{}
+
+func doEncrypt(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.New("Please specify KEY=VALUE.")
+	}
+
+	secretMap := map[string]string{}
+	var err error
+
+	if args[0] == "-" {
+		secretMap, err = readFromStdin()
+		if err != nil {
+			return errors.Wrap(err, "Failed to read secret from stdin.")
 		}
-
-		secretMap := map[string]string{}
-		var err error
-
-		if args[0] == "-" {
-			secretMap, err = readFromStdin()
+	} else {
+		if encryptOpts.interactive {
+			fmt.Println("Entered secret value will be hidden.")
+			secretMap, err = readFromArgsInteractive(args)
 			if err != nil {
-				return errors.Wrap(err, "Failed to read secret from stdin.")
+				return errors.Wrap(err, "Failed to read secret from args.")
 			}
 		} else {
-			if interactive {
-				fmt.Println("Entered secret value will be hidden.")
-				secretMap, err = readFromArgsInteractive(args)
-				if err != nil {
-					return errors.Wrap(err, "Failed to read secret from args.")
-				}
-			} else {
-				secretMap, err = readFromArgs(args)
-				if err != nil {
-					return errors.Wrap(err, "Failed to read secret from args.")
-				}
+			secretMap, err = readFromArgs(args)
+			if err != nil {
+				return errors.Wrap(err, "Failed to read secret from args.")
 			}
 		}
+	}
 
-		if secretFile == "" {
-			flushToStdout(secretMap)
-		} else {
-			if err := flushToFile(secretMap, secretFile); err != nil {
-				return errors.Wrapf(err, "Failed to flush secrets to file. filename=%s", secretFile)
-			}
+	if encryptOpts.secretFile == "" {
+		flushToStdout(secretMap)
+	} else {
+		if err := flushToFile(secretMap, encryptOpts.secretFile); err != nil {
+			return errors.Wrapf(err, "Failed to flush secrets to file. filename=%s", encryptOpts.secretFile)
 		}
+	}
 
-		return nil
-	},
+	return nil
 }
 
 func flushToFile(secretMap map[string]string, filename string) error {
 	newSecretMap := map[string]string{}
 
-	if _, err := os.Stat(secretFile); err == nil {
-		_, secrets, err2 := secret.LoadFromYAML(secretFile)
+	if _, err := os.Stat(filename); err == nil {
+		_, secrets, err2 := secret.LoadFromYAML(filename)
 		if err2 != nil {
-			return errors.Wrapf(err2, "Failed to load local secret file. filename=%s", secretFile)
+			return errors.Wrapf(err2, "Failed to load local secret file. filename=%s", filename)
 		}
 
 		newSecretMap = secrets.ListToMap()
@@ -89,8 +96,8 @@ func flushToFile(secretMap map[string]string, filename string) error {
 	}
 	newSecrets := secret.MapToList(newSecretMap)
 
-	if err := newSecrets.SaveAsYAML(secretFile); err != nil {
-		return errors.Wrapf(err, "Failed to update local secret file. filename=%s", secretFile)
+	if err := newSecrets.SaveAsYAML(filename); err != nil {
+		return errors.Wrapf(err, "Failed to update local secret file. filename=%s", filename)
 	}
 
 	return nil
@@ -113,7 +120,7 @@ func readFromStdin() (map[string]string, error) {
 		}
 		key, value := ss[0], ss[1]
 
-		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+		cipherText, err := aws.KMS.EncryptBase64(rootOpts.keyAlias, key, value)
 		if err != nil {
 			return map[string]string{}, errors.Wrapf(err, "Failed to encrypt secret. key=%s", key)
 		}
@@ -134,7 +141,7 @@ func readFromArgs(args []string) (map[string]string, error) {
 		}
 		key, value := ss[0], ss[1]
 
-		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+		cipherText, err := aws.KMS.EncryptBase64(rootOpts.keyAlias, key, value)
 		if err != nil {
 			return map[string]string{}, errors.Wrapf(err, "Failed to encrypt secret. key=%s", key)
 		}
@@ -152,7 +159,7 @@ func readFromArgsInteractive(args []string) (map[string]string, error) {
 		key := arg
 		value := util.ScanNoecho(key)
 
-		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+		cipherText, err := aws.KMS.EncryptBase64(rootOpts.keyAlias, key, value)
 		if err != nil {
 			return map[string]string{}, errors.Wrapf(err, "Failed to encrypt secret. key=%s", key)
 		}
@@ -166,6 +173,6 @@ func readFromArgsInteractive(args []string) (map[string]string, error) {
 func init() {
 	RootCmd.AddCommand(encryptCmd)
 
-	encryptCmd.Flags().StringVar(&secretFile, "add", "", "Add to local secret file")
-	encryptCmd.Flags().BoolVarP(&interactive, "interactive", "i", false, "Interactive value input")
+	encryptCmd.Flags().StringVar(&encryptOpts.secretFile, "add", "", "Add to local secret file")
+	encryptCmd.Flags().BoolVarP(&encryptOpts.interactive, "interactive", "i", false, "Interactive value input")
 }
