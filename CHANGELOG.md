@@ -1,3 +1,21 @@
+# [v0.5.0](https://github.com/dtan4/s3url/releases/tag/v0.5.0) (2016-12-22)
+
+## Backward incompatible changes
+
+- Secret YAML file schema was changed [#38](https://github.com/dtan4/valec/pull/38)
+
+## Features
+
+- Specify KMS key per namespace [#38](https://github.com/dtan4/valec/pull/38)
+
+## Features
+
+- Interactive encryption mode (`valec encrypt -i KEY1 KEY2`) [#34](https://github.com/dtan4/valec/pull/34)
+- Use aws-sdk-go 1.6.x [#33](https://github.com/dtan4/valec/pull/33)
+- Encrypt secrets from stdin [#32](https://github.com/dtan4/valec/pull/32)
+- Add `valec dotenv` command [#31](https://github.com/dtan4/valec/pull/31)
+- Encrypt multiple secrets at once (`valec encrypt KEY1=VALUE1 KEY2=VALUE2`) [#30](https://github.com/dtan4/valec/pull/30)
+
 # [v0.4.0](https://github.com/dtan4/s3url/releases/tag/v0.4.0) (2016-12-21)
 
 ## Features
