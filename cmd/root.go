@@ -36,7 +36,6 @@ Valec enables you to manage application secrets in your favorite VCS.`,
 
 var rootOpts = struct {
 	debug     bool
-	keyAlias  string
 	noColor   bool
 	tableName string
 	region    string
@@ -59,7 +58,6 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	RootCmd.PersistentFlags().BoolVar(&rootOpts.debug, "debug", false, "Debug mode")
-	RootCmd.PersistentFlags().StringVar(&rootOpts.keyAlias, "key", defaultKeyAlias, "KMS key alias")
 	RootCmd.PersistentFlags().BoolVar(&rootOpts.noColor, "no-color", false, "Disable colorized output")
 	RootCmd.PersistentFlags().StringVar(&rootOpts.tableName, "table-name", defaultTableName, "DynamoDB table name")
 	RootCmd.PersistentFlags().StringVar(&rootOpts.region, "region", "", "AWS region")

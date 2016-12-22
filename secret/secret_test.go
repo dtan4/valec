@@ -278,8 +278,9 @@ func TestSaveAsYAML(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	filename := filepath.Join(dir, "secret.yaml")
+	kmsKey := "valec-qa"
 
-	if err := secrets.SaveAsYAML(filename); err != nil {
+	if err := secrets.SaveAsYAML(filename, kmsKey); err != nil {
 		t.Fatalf("Error should not be raised. err: %s", err)
 	}
 
@@ -292,62 +293,78 @@ func TestSaveAsYAML(t *testing.T) {
 	}
 }
 
-func TestLoadFromFromYAML_valid(t *testing.T) {
-	filepath := testdataPath("test_valid.yaml")
-	secrets, err := LoadFromYAML(filepath)
-	if err != nil {
-		t.Fatalf("Error should not be raised. error: %s", err)
-	}
-
-	expects := []struct {
-		key   string
-		value string
+func TestLoadFromYAML_valid(t *testing.T) {
+	testcases := []struct {
+		filename string
+		kmsKey   string
 	}{
-		{"FOO", "bar"},
-		{"BAZ", "1"},
-		{"QUX", "true"},
+		{
+			filename: "test_valid.yaml",
+			kmsKey:   "valec-qa",
+		},
+		{
+			filename: "test_no_kmskey.yaml",
+			kmsKey:   "",
+		},
 	}
 
-	if len(secrets) != len(expects) {
-		t.Fatalf("Secrets does not loaded correctly. expected length: %d, actual length: %d", len(expects), len(secrets))
+	expectedSecrets := Secrets{
+		&Secret{
+			Key:   "FOO",
+			Value: "bar",
+		},
+		&Secret{
+			Key:   "BAZ",
+			Value: "1",
+		},
+		&Secret{
+			Key:   "QUX",
+			Value: "true",
+		},
 	}
 
-	for i, secret := range secrets {
-		if secret.Key != expects[i].key {
-			t.Errorf("Secret key does not match. expected: %s, actual: %s", expects[i].key, secret.Key)
+	for _, tc := range testcases {
+		filepath := testdataPath(tc.filename)
+		kmsKey, secrets, err := LoadFromYAML(filepath)
+		if err != nil {
+			t.Errorf("Error should not be raised. error: %s, filename: %s", err, tc.filename)
 		}
 
-		if secret.Value != expects[i].value {
-			t.Errorf("Secret value does not match. expected: %s, actual: %s", expects[i].value, secret.Value)
+		if kmsKey != tc.kmsKey {
+			t.Errorf("kmsKey does not match. expected: %s, actual: %s, filename: %s", tc.kmsKey, kmsKey, tc.filename)
+		}
+
+		if !reflect.DeepEqual(secrets, expectedSecrets) {
+			t.Errorf("Secrets does not match. expected: %v, actual: %v, filename: %s", expectedSecrets, secrets, tc.filename)
 		}
 	}
 }
 
-func TestLoadFromFromYAML_invalid(t *testing.T) {
-	filepath := testdataPath("test_invalid.yaml")
-	_, err := LoadFromYAML(filepath)
-	if err == nil {
-		t.Fatalf("Error should be raised. error: %s", err)
+func TestLoadFromYAML_invalid(t *testing.T) {
+	testcases := []struct {
+		filename  string
+		errPrefix string
+	}{
+		{
+			filename:  "test_invalid.yaml",
+			errPrefix: fmt.Sprintf("Failed to parse secret file as YAML. filename=%s", testdataPath("test_invalid.yaml")),
+		},
+		{
+			filename:  "test_notexist.yaml",
+			errPrefix: fmt.Sprintf("Failed to read secret file. filename=%s", testdataPath("test_notexist.yaml")),
+		},
 	}
 
-	expected := fmt.Sprintf("Failed to parse secret file as YAML. filename=%s", filepath)
+	for _, tc := range testcases {
+		filepath := testdataPath(tc.filename)
+		_, _, err := LoadFromYAML(filepath)
+		if err == nil {
+			t.Errorf("Error should be raised. filename: %s", tc.filename)
+		}
 
-	if !strings.HasPrefix(err.Error(), expected) {
-		t.Fatalf("Error message prefix does not match. expected prefix: %q, actual message: %q", expected, err.Error())
-	}
-}
-
-func TestLoadFromFromYAML_notexist(t *testing.T) {
-	filepath := testdataPath("test_notexist.yaml")
-	_, err := LoadFromYAML(filepath)
-	if err == nil {
-		t.Fatalf("Error should be raised. error: %s", err)
-	}
-
-	expected := fmt.Sprintf("Failed to read secret file. filename=%s", filepath)
-
-	if !strings.HasPrefix(err.Error(), expected) {
-		t.Fatalf("Error message prefix does not match. expected prefix: %q, actual message: %q", expected, err.Error())
+		if !strings.HasPrefix(err.Error(), tc.errPrefix) {
+			t.Fatalf("Error message prefix does not match. expected prefix: %q, actual message: %q, filename: %s", tc.errPrefix, err.Error(), tc.filename)
+		}
 	}
 }
 

@@ -17,7 +17,7 @@ var listCmd = &cobra.Command{
 
 To list secrets stored in DynamoDB, specify namespace:
   $ valec list NAMESPACE
-To list secrets stored in local file, specify file:
+to list secrets stored in local file, specify file:
   $ valec list -f qa.yaml
 
 Encrypted values are decrypted and printed as plain text.`,
@@ -49,7 +49,7 @@ func doList(cmd *cobra.Command, args []string) error {
 			return errors.Errorf("Namespace %s does not exist.", namespace)
 		}
 	} else {
-		secrets, err = secret.LoadFromYAML(listOpts.secretFile)
+		_, secrets, err = secret.LoadFromYAML(listOpts.secretFile)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to load secrets from file. filename=%s", listOpts.secretFile)
 		}

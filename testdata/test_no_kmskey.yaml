@@ -1,4 +1,3 @@
-kms_key: valec-qa
 secrets:
 - key: FOO
   value: bar
