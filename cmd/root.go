@@ -34,6 +34,15 @@ Valec enables you to manage application secrets in your favorite VCS.`,
 	//	Run: func(cmd *cobra.Command, args []string) { },
 }
 
+// global flag variable
+var (
+	debug     bool
+	keyAlias  string
+	noColor   bool
+	tableName string
+	region    string
+)
+
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
