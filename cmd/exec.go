@@ -28,7 +28,7 @@ func doExec(cmd *cobra.Command, args []string) error {
 	}
 	namespace := args[0]
 
-	secrets, err := aws.DynamoDB.ListSecrets(tableName, namespace)
+	secrets, err := aws.DynamoDB.ListSecrets(rootOpts.tableName, namespace)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to load secrets from DynamoDB. namespace=%s", namespace)
 	}

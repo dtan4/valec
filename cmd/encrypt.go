@@ -120,7 +120,7 @@ func readFromStdin() (map[string]string, error) {
 		}
 		key, value := ss[0], ss[1]
 
-		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+		cipherText, err := aws.KMS.EncryptBase64(rootOpts.keyAlias, key, value)
 		if err != nil {
 			return map[string]string{}, errors.Wrapf(err, "Failed to encrypt secret. key=%s", key)
 		}
@@ -141,7 +141,7 @@ func readFromArgs(args []string) (map[string]string, error) {
 		}
 		key, value := ss[0], ss[1]
 
-		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+		cipherText, err := aws.KMS.EncryptBase64(rootOpts.keyAlias, key, value)
 		if err != nil {
 			return map[string]string{}, errors.Wrapf(err, "Failed to encrypt secret. key=%s", key)
 		}
@@ -159,7 +159,7 @@ func readFromArgsInteractive(args []string) (map[string]string, error) {
 		key := arg
 		value := util.ScanNoecho(key)
 
-		cipherText, err := aws.KMS.EncryptBase64(keyAlias, key, value)
+		cipherText, err := aws.KMS.EncryptBase64(rootOpts.keyAlias, key, value)
 		if err != nil {
 			return map[string]string{}, errors.Wrapf(err, "Failed to encrypt secret. key=%s", key)
 		}

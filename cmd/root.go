@@ -23,7 +23,7 @@ var RootCmd = &cobra.Command{
 	Long: `Valec is a CLI tool to handle application secrets securely using AWS DynamoDB and KMS.
 Valec enables you to manage application secrets in your favorite VCS.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if err := aws.Initialize(region); err != nil {
+		if err := aws.Initialize(rootOpts.region); err != nil {
 			return errors.Wrap(err, "Failed to initialize AWS API clients.")
 		}
 
@@ -34,20 +34,19 @@ Valec enables you to manage application secrets in your favorite VCS.`,
 	//	Run: func(cmd *cobra.Command, args []string) { },
 }
 
-// global flag variable
-var (
+var rootOpts = struct {
 	debug     bool
 	keyAlias  string
 	noColor   bool
 	tableName string
 	region    string
-)
+}{}
 
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		if debug {
+		if rootOpts.debug {
 			fmt.Printf("%+v\n", err)
 		} else {
 			fmt.Println(err)
@@ -59,11 +58,11 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	RootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Debug mode")
-	RootCmd.PersistentFlags().StringVar(&keyAlias, "key", defaultKeyAlias, "KMS key alias")
-	RootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable colorized output")
-	RootCmd.PersistentFlags().StringVar(&tableName, "table-name", defaultTableName, "DynamoDB table name")
-	RootCmd.PersistentFlags().StringVar(&region, "region", "", "AWS region")
+	RootCmd.PersistentFlags().BoolVar(&rootOpts.debug, "debug", false, "Debug mode")
+	RootCmd.PersistentFlags().StringVar(&rootOpts.keyAlias, "key", defaultKeyAlias, "KMS key alias")
+	RootCmd.PersistentFlags().BoolVar(&rootOpts.noColor, "no-color", false, "Disable colorized output")
+	RootCmd.PersistentFlags().StringVar(&rootOpts.tableName, "table-name", defaultTableName, "DynamoDB table name")
+	RootCmd.PersistentFlags().StringVar(&rootOpts.region, "region", "", "AWS region")
 }
 
 // initConfig reads in config file and ENV variables if set.

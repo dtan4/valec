@@ -30,7 +30,7 @@ func doDump(cmd *cobra.Command, args []string) error {
 	}
 	namespace := args[0]
 
-	secrets, err := aws.DynamoDB.ListSecrets(tableName, namespace)
+	secrets, err := aws.DynamoDB.ListSecrets(rootOpts.tableName, namespace)
 	if err != nil {
 		return errors.Wrap(err, "Failed to retrieve secrets.")
 	}

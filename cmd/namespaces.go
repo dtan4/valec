@@ -16,7 +16,7 @@ var namespacesCmd = &cobra.Command{
 }
 
 func doNamespaces(cmd *cobra.Command, args []string) error {
-	namespaces, err := aws.DynamoDB.ListNamespaces(tableName)
+	namespaces, err := aws.DynamoDB.ListNamespaces(rootOpts.tableName)
 	if err != nil {
 		return errors.Wrap(err, "Failed to retrieve namespaces.")
 	}
