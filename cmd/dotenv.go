@@ -20,51 +20,53 @@ const (
 var dotenvCmd = &cobra.Command{
 	Use:   "dotenv NAMESPACE",
 	Short: "Generate .env using .env.sample",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return errors.New("Please specify namespace.")
-		}
-		namespace := args[0]
+	RunE:  doDotenv,
+}
 
-		secrets, err := aws.DynamoDB.ListSecrets(tableName, namespace)
-		if err != nil {
-			return errors.Wrap(err, "Failed to retrieve secrets.")
-		}
+func doDotenv(cmd *cobra.Command, args []string) error {
+	if len(args) != 1 {
+		return errors.New("Please specify namespace.")
+	}
+	namespace := args[0]
 
-		if len(secrets) == 0 {
-			return errors.Errorf("Namespace %s does not exist.", namespace)
-		}
+	secrets, err := aws.DynamoDB.ListSecrets(tableName, namespace)
+	if err != nil {
+		return errors.Wrap(err, "Failed to retrieve secrets.")
+	}
 
-		var (
-			dotenv []string
-			err2   error
-		)
+	if len(secrets) == 0 {
+		return errors.Errorf("Namespace %s does not exist.", namespace)
+	}
 
-		if _, err := os.Stat(dotenvSampleName); err != nil {
-			if os.IsNotExist(err) {
-				fmt.Fprintf(os.Stderr, "%s does not exist. Dumping all secrets...\n", dotenvSampleName)
+	var (
+		dotenv []string
+		err2   error
+	)
 
-				dotenv, err2 = dumpAll(secrets, quote)
-				if err2 != nil {
-					return errors.Wrap(err, "Failed to dump all secrets.")
-				}
-			} else {
-				return errors.Wrapf(err, "Failed to get stat of dotenv template. filename=%s", dotenvSampleName)
+	if _, err := os.Stat(dotenvSampleName); err != nil {
+		if os.IsNotExist(err) {
+			fmt.Fprintf(os.Stderr, "%s does not exist. Dumping all secrets...\n", dotenvSampleName)
+
+			dotenv, err2 = dumpAll(secrets, quote)
+			if err2 != nil {
+				return errors.Wrap(err, "Failed to dump all secrets.")
 			}
 		} else {
-			dotenv, err2 = dumpWithTemplate(secrets, quote)
-			if err2 != nil {
-				return errors.Wrap(err, "Failed to dump secrets with dotenv template.")
-			}
+			return errors.Wrapf(err, "Failed to get stat of dotenv template. filename=%s", dotenvSampleName)
 		}
-
-		body := []byte(strings.Join(dotenv, "\n") + "\n")
-		if err := util.WriteFileWithoutSection(dotenvName, body); err != nil {
-			return errors.Wrapf(err, "Failed to write dotenv file. filename=%s", dotenvName)
+	} else {
+		dotenv, err2 = dumpWithTemplate(secrets, quote)
+		if err2 != nil {
+			return errors.Wrap(err, "Failed to dump secrets with dotenv template.")
 		}
+	}
 
-		return nil
-	},
+	body := []byte(strings.Join(dotenv, "\n") + "\n")
+	if err := util.WriteFileWithoutSection(dotenvName, body); err != nil {
+		return errors.Wrapf(err, "Failed to write dotenv file. filename=%s", dotenvName)
+	}
+
+	return nil
 }
 
 func init() {

@@ -21,51 +21,53 @@ To list secrets stored in local file, specify file:
   $ valec list -f qa.yaml
 
 Encrypted values are decrypted and printed as plain text.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			secrets []*secret.Secret
-			err     error
-		)
+	RunE: doList,
+}
 
-		if secretFile == "" {
-			if len(args) != 1 {
-				return errors.New("Please specify namespace or secret file (-f FILE).")
-			}
-			namespace := args[0]
+func doList(cmd *cobra.Command, args []string) error {
+	var (
+		secrets []*secret.Secret
+		err     error
+	)
 
-			secrets, err = aws.DynamoDB.ListSecrets(tableName, namespace)
-			if err != nil {
-				return errors.Wrapf(err, "Failed to load secrets from DynamoDB. namespace=%s", namespace)
-			}
+	if secretFile == "" {
+		if len(args) != 1 {
+			return errors.New("Please specify namespace or secret file (-f FILE).")
+		}
+		namespace := args[0]
 
-			if len(secrets) == 0 {
-				return errors.Errorf("Namespace %s does not exist.", namespace)
-			}
-		} else {
-			secrets, err = secret.LoadFromYAML(secretFile)
-			if err != nil {
-				return errors.Wrapf(err, "Failed to load secrets from file. filename=%s", secretFile)
-			}
+		secrets, err = aws.DynamoDB.ListSecrets(tableName, namespace)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to load secrets from DynamoDB. namespace=%s", namespace)
 		}
 
-		longestLength := longestKeyLength(secrets)
+		if len(secrets) == 0 {
+			return errors.Errorf("Namespace %s does not exist.", namespace)
+		}
+	} else {
+		secrets, err = secret.LoadFromYAML(secretFile)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to load secrets from file. filename=%s", secretFile)
+		}
+	}
 
-		for _, secret := range secrets {
-			plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
-			if err != nil {
-				return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", secret.Key, secret.Value)
-			}
+	longestLength := longestKeyLength(secrets)
 
-			padding := ""
-			for i := 0; i < longestLength-len(secret.Key); i++ {
-				padding += " "
-			}
-
-			fmt.Printf("%s:%s %s\n", secret.Key, padding, plainValue)
+	for _, secret := range secrets {
+		plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", secret.Key, secret.Value)
 		}
 
-		return nil
-	},
+		padding := ""
+		for i := 0; i < longestLength-len(secret.Key); i++ {
+			padding += " "
+		}
+
+		fmt.Printf("%s:%s %s\n", secret.Key, padding, plainValue)
+	}
+
+	return nil
 }
 
 func longestKeyLength(secrets []*secret.Secret) int {

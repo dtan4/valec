@@ -19,42 +19,44 @@ var execCmd = &cobra.Command{
 
 Stored secrets are consumed as environment variables.
 `,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 2 {
-			return errors.New("Please specify namespace and command.")
-		}
-		namespace := args[0]
+	RunE: doExec,
+}
 
-		secrets, err := aws.DynamoDB.ListSecrets(tableName, namespace)
+func doExec(cmd *cobra.Command, args []string) error {
+	if len(args) < 2 {
+		return errors.New("Please specify namespace and command.")
+	}
+	namespace := args[0]
+
+	secrets, err := aws.DynamoDB.ListSecrets(tableName, namespace)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to load secrets from DynamoDB. namespace=%s", namespace)
+	}
+
+	envs := os.Environ()
+
+	for _, secret := range secrets {
+		plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to load secrets from DynamoDB. namespace=%s", namespace)
+			return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", secret.Key, secret.Value)
 		}
 
-		envs := os.Environ()
+		envs = append(envs, fmt.Sprintf("%s=%s", secret.Key, plainValue))
+	}
 
-		for _, secret := range secrets {
-			plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
-			if err != nil {
-				return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", secret.Key, secret.Value)
-			}
+	execCmd := exec.Command(args[1], args[2:]...)
+	execCmd.Env = envs
+	execCmd.Stderr = os.Stderr
+	execCmd.Stdout = os.Stdout
+	err = execCmd.Run()
 
-			envs = append(envs, fmt.Sprintf("%s=%s", secret.Key, plainValue))
-		}
+	if execCmd.Process == nil {
+		return errors.Wrap(err, "Failed to execute command.")
+	}
 
-		execCmd := exec.Command(args[1], args[2:]...)
-		execCmd.Env = envs
-		execCmd.Stderr = os.Stderr
-		execCmd.Stdout = os.Stdout
-		err = execCmd.Run()
+	os.Exit(execCmd.ProcessState.Sys().(syscall.WaitStatus).ExitStatus())
 
-		if execCmd.Process == nil {
-			return errors.Wrap(err, "Failed to execute command.")
-		}
-
-		os.Exit(execCmd.ProcessState.Sys().(syscall.WaitStatus).ExitStatus())
-
-		return nil
-	},
+	return nil
 }
 
 func init() {

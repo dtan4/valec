@@ -15,25 +15,27 @@ import (
 var syncCmd = &cobra.Command{
 	Use:   "sync SECRETDIR [NAMESPACE]",
 	Short: "Synchronize secrets between local file and DynamoDB",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("Please specify secret directory.")
-		}
-		dirname := args[0]
+	RunE:  doSync,
+}
 
-		files, err := util.ListYAMLFiles(dirname)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
-		}
+func doSync(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.New("Please specify secret directory.")
+	}
+	dirname := args[0]
 
-		for _, file := range files {
-			if err := syncFile(file, dirname); err != nil {
-				return errors.Wrapf(err, "Failed to synchronize file. filename=%s", file)
-			}
-		}
+	files, err := util.ListYAMLFiles(dirname)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
+	}
 
-		return nil
-	},
+	for _, file := range files {
+		if err := syncFile(file, dirname); err != nil {
+			return errors.Wrapf(err, "Failed to synchronize file. filename=%s", file)
+		}
+	}
+
+	return nil
 }
 
 func syncFile(filename, dirname string) error {

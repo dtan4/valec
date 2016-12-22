@@ -32,44 +32,46 @@ Enter secret value interactively:
   KEY1:
   KEY2:
 `,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("Please specify KEY=VALUE.")
+	RunE: doEncrypt,
+}
+
+func doEncrypt(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.New("Please specify KEY=VALUE.")
+	}
+
+	secretMap := map[string]string{}
+	var err error
+
+	if args[0] == "-" {
+		secretMap, err = readFromStdin()
+		if err != nil {
+			return errors.Wrap(err, "Failed to read secret from stdin.")
 		}
-
-		secretMap := map[string]string{}
-		var err error
-
-		if args[0] == "-" {
-			secretMap, err = readFromStdin()
+	} else {
+		if interactive {
+			fmt.Println("Entered secret value will be hidden.")
+			secretMap, err = readFromArgsInteractive(args)
 			if err != nil {
-				return errors.Wrap(err, "Failed to read secret from stdin.")
+				return errors.Wrap(err, "Failed to read secret from args.")
 			}
 		} else {
-			if interactive {
-				fmt.Println("Entered secret value will be hidden.")
-				secretMap, err = readFromArgsInteractive(args)
-				if err != nil {
-					return errors.Wrap(err, "Failed to read secret from args.")
-				}
-			} else {
-				secretMap, err = readFromArgs(args)
-				if err != nil {
-					return errors.Wrap(err, "Failed to read secret from args.")
-				}
+			secretMap, err = readFromArgs(args)
+			if err != nil {
+				return errors.Wrap(err, "Failed to read secret from args.")
 			}
 		}
+	}
 
-		if secretFile == "" {
-			flushToStdout(secretMap)
-		} else {
-			if err := flushToFile(secretMap, secretFile); err != nil {
-				return errors.Wrapf(err, "Failed to flush secrets to file. filename=%s", secretFile)
-			}
+	if secretFile == "" {
+		flushToStdout(secretMap)
+	} else {
+		if err := flushToFile(secretMap, secretFile); err != nil {
+			return errors.Wrapf(err, "Failed to flush secrets to file. filename=%s", secretFile)
 		}
+	}
 
-		return nil
-	},
+	return nil
 }
 
 func flushToFile(secretMap map[string]string, filename string) error {
