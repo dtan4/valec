@@ -326,44 +326,44 @@ func TestLoadFromYAML_valid(t *testing.T) {
 		filepath := testdataPath(tc.filename)
 		kmsKey, secrets, err := LoadFromYAML(filepath)
 		if err != nil {
-			t.Fatalf("Error should not be raised. error: %s", err)
+			t.Errorf("Error should not be raised. error: %s, filename: %s", err, tc.filename)
 		}
 
 		if kmsKey != tc.kmsKey {
-			t.Errorf("kmsKey does not match. expected: %s, actual: %s", tc.kmsKey, kmsKey)
+			t.Errorf("kmsKey does not match. expected: %s, actual: %s, filename: %s", tc.kmsKey, kmsKey, tc.filename)
 		}
 
 		if !reflect.DeepEqual(secrets, expectedSecrets) {
-			t.Errorf("Secrets does not match. expected: %v, actual: %v", expectedSecrets, secrets)
+			t.Errorf("Secrets does not match. expected: %v, actual: %v, filename: %s", expectedSecrets, secrets, tc.filename)
 		}
 	}
 }
 
 func TestLoadFromYAML_invalid(t *testing.T) {
-	filepath := testdataPath("test_invalid.yaml")
-	_, _, err := LoadFromYAML(filepath)
-	if err == nil {
-		t.Fatalf("Error should be raised. error: %s", err)
+	testcases := []struct {
+		filename  string
+		errPrefix string
+	}{
+		{
+			filename:  "test_invalid.yaml",
+			errPrefix: fmt.Sprintf("Failed to parse secret file as YAML. filename=%s", testdataPath("test_invalid.yaml")),
+		},
+		{
+			filename:  "test_notexist.yaml",
+			errPrefix: fmt.Sprintf("Failed to read secret file. filename=%s", testdataPath("test_notexist.yaml")),
+		},
 	}
 
-	expected := fmt.Sprintf("Failed to parse secret file as YAML. filename=%s", filepath)
+	for _, tc := range testcases {
+		filepath := testdataPath(tc.filename)
+		_, _, err := LoadFromYAML(filepath)
+		if err == nil {
+			t.Errorf("Error should be raised. filename: %s", tc.filename)
+		}
 
-	if !strings.HasPrefix(err.Error(), expected) {
-		t.Fatalf("Error message prefix does not match. expected prefix: %q, actual message: %q", expected, err.Error())
-	}
-}
-
-func TestLoadFromYAML_notexist(t *testing.T) {
-	filepath := testdataPath("test_notexist.yaml")
-	_, _, err := LoadFromYAML(filepath)
-	if err == nil {
-		t.Fatalf("Error should be raised. error: %s", err)
-	}
-
-	expected := fmt.Sprintf("Failed to read secret file. filename=%s", filepath)
-
-	if !strings.HasPrefix(err.Error(), expected) {
-		t.Fatalf("Error message prefix does not match. expected prefix: %q, actual message: %q", expected, err.Error())
+		if !strings.HasPrefix(err.Error(), tc.errPrefix) {
+			t.Fatalf("Error message prefix does not match. expected prefix: %q, actual message: %q, filename: %s", tc.errPrefix, err.Error(), tc.filename)
+		}
 	}
 }
 
