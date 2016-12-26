@@ -201,6 +201,31 @@ func (c *Client) ListNamespaces(table string) ([]string, error) {
 	return namespaces, nil
 }
 
+// NamespaceExists check whether the given table exists or not
+func (c *Client) NamespaceExists(table, namespace string) (bool, error) {
+	keyConditions := map[string]*dynamodb.Condition{
+		"namespace": &dynamodb.Condition{
+			ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+			AttributeValueList: []*dynamodb.AttributeValue{
+				&dynamodb.AttributeValue{
+					S: aws.String(namespace),
+				},
+			},
+		},
+	}
+	params := &dynamodb.QueryInput{
+		TableName:     aws.String(table),
+		KeyConditions: keyConditions,
+	}
+
+	resp, err := c.api.Query(params)
+	if err != nil {
+		return false, errors.Wrapf(err, "Failed to list up secrets. table=%s", table)
+	}
+
+	return len(resp.Items) > 0, nil
+}
+
 // TableExists check whether the given table exists or not
 func (c *Client) TableExists(table string) (bool, error) {
 	resp, err := c.api.ListTables(&dynamodb.ListTablesInput{})
