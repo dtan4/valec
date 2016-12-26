@@ -82,6 +82,11 @@ func TestNamespaceFromPath(t *testing.T) {
 			expected: "foo",
 		},
 		{
+			path:     filepath.Join("secrets", "foo.yml"),
+			basedir:  ".",
+			expected: "secrets/foo",
+		},
+		{
 			path:     filepath.Join("secrets", "foo", "bar.yml"),
 			basedir:  "secrets",
 			expected: "foo/bar",
@@ -99,7 +104,10 @@ func TestNamespaceFromPath(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		actual := NamespaceFromPath(tc.path, tc.basedir)
+		actual, err := NamespaceFromPath(tc.path, tc.basedir)
+		if err != nil {
+			t.Errorf("Error should not be raised. error: %s", err)
+		}
 
 		if actual != tc.expected {
 			t.Errorf("Namespace does not match. expected: %q, actual: %q", tc.expected, actual)

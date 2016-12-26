@@ -43,7 +43,10 @@ func doSync(cmd *cobra.Command, args []string) error {
 }
 
 func syncFile(filename, dirname string) error {
-	namespace := util.NamespaceFromPath(filename, dirname)
+	namespace, err := util.NamespaceFromPath(filename, dirname)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get full path")
+	}
 
 	if rootOpts.noColor {
 		fmt.Println(namespace)
