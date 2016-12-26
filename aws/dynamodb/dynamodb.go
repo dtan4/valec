@@ -1,6 +1,8 @@
 package dynamodb
 
 import (
+	"sort"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
@@ -193,6 +195,8 @@ func (c *Client) ListNamespaces(table string) ([]string, error) {
 	for k := range nsmap {
 		namespaces = append(namespaces, k)
 	}
+
+	sort.Strings(namespaces)
 
 	return namespaces, nil
 }
