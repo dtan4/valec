@@ -43,15 +43,37 @@ func doSync(cmd *cobra.Command, args []string) error {
 }
 
 func syncFile(filename, dirname string) error {
+	bold := color.New(color.Bold)
+	red := color.New(color.FgRed)
+	// redBold := color.New(color.FgRed, color.Bold)
+	green := color.New(color.FgGreen)
+	greenBold := color.New(color.FgGreen, color.Bold)
+	yellow := color.New(color.FgYellow)
+
 	namespace, err := util.NamespaceFromPath(filename, dirname)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get full path")
 	}
 
+	namespaceExists, err := aws.DynamoDB.NamespaceExists(rootOpts.tableName, namespace)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to check whether namespace exists or not. table=%s, namespace=%s", rootOpts.tableName, namespace)
+	}
+
+	if !namespaceExists {
+		if rootOpts.noColor {
+			fmt.Printf("+ %s\n", namespace)
+		} else {
+			greenBold.Printf("+ %s\n", namespace)
+		}
+
+		return nil
+	}
+
 	if rootOpts.noColor {
 		fmt.Println(namespace)
 	} else {
-		color.New(color.Bold).Println(namespace)
+		bold.Println(namespace)
 	}
 
 	_, srcSecrets, err := secret.LoadFromYAML(filename)
@@ -65,9 +87,6 @@ func syncFile(filename, dirname string) error {
 	}
 
 	added, updated, deleted := srcSecrets.CompareList(dstSecrets)
-	red := color.New(color.FgRed)
-	green := color.New(color.FgGreen)
-	yellow := color.New(color.FgYellow)
 
 	if len(deleted) > 0 {
 		fmt.Printf("%  d secrets will be deleted.\n", len(deleted))
