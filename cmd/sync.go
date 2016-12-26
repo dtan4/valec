@@ -56,15 +56,7 @@ func doSync(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	added, deleted := util.CompareStrings(srcNamespaces, dstNamespaces)
-
-	for _, namespace := range added {
-		msg.GreenBold.Printf("+ %s\n", namespace)
-	}
-
-	if len(added) > 0 {
-		fmt.Printf("%d namespaces will be added.\n", len(added))
-	}
+	_, deleted := util.CompareStrings(srcNamespaces, dstNamespaces)
 
 	for _, namespace := range deleted {
 		msg.RedBold.Printf("- %s\n", namespace)
