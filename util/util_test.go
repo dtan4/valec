@@ -39,6 +39,35 @@ func TestSeparatorRegexp(t *testing.T) {
 	}
 }
 
+func TestCompareStrings(t *testing.T) {
+	src := []string{
+		"foo",
+		"bar",
+		"baz",
+	}
+	dst := []string{
+		"bar",
+		"qux",
+	}
+	expectedAdded := []string{
+		"qux",
+	}
+	expectedDeleted := []string{
+		"baz",
+		"foo",
+	}
+
+	added, deleted := CompareStrings(src, dst)
+
+	if !reflect.DeepEqual(added, expectedAdded) {
+		t.Errorf("Added strings does not match. expected: %q, actual: %q", expectedAdded, added)
+	}
+
+	if !reflect.DeepEqual(deleted, expectedDeleted) {
+		t.Errorf("Deleted strings does not match. expected: %q, actual: %q", expectedDeleted, deleted)
+	}
+}
+
 func TestIsSecretFile(t *testing.T) {
 	testcases := []struct {
 		filename string

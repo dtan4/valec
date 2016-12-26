@@ -37,27 +37,41 @@ func doSync(cmd *cobra.Command, args []string) error {
 		return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
 	}
 
+	srcNamespaces, err := aws.DynamoDB.ListNamespaces(rootOpts.tableName)
+	if err != nil {
+		return errors.Wrap(err, "Failed to retrieve namespaces.")
+	}
+
+	dstNamespaces := []string{}
+
 	for _, file := range files {
-		if err := syncFile(file, dirname); err != nil {
+		namespace, err := util.NamespaceFromPath(file, dirname)
+		if err != nil {
+			return errors.Wrap(err, "Failed to get namespace.")
+		}
+		dstNamespaces = append(dstNamespaces, namespace)
+
+		if err := syncFile(file, namespace); err != nil {
 			return errors.Wrapf(err, "Failed to synchronize file. filename=%s", file)
 		}
+	}
+
+	_, deleted := util.CompareStrings(srcNamespaces, dstNamespaces)
+
+	for _, namespace := range deleted {
+		color.New(color.FgRed, color.Bold).Printf("- %s\n", namespace)
 	}
 
 	return nil
 }
 
-func syncFile(filename, dirname string) error {
+func syncFile(filename, namespace string) error {
 	bold := color.New(color.Bold)
 	red := color.New(color.FgRed)
 	// redBold := color.New(color.FgRed, color.Bold)
 	green := color.New(color.FgGreen)
 	greenBold := color.New(color.FgGreen, color.Bold)
 	yellow := color.New(color.FgYellow)
-
-	namespace, err := util.NamespaceFromPath(filename, dirname)
-	if err != nil {
-		return errors.Wrap(err, "Failed to get full path")
-	}
 
 	namespaceExists, err := aws.DynamoDB.NamespaceExists(rootOpts.tableName, namespace)
 	if err != nil {
