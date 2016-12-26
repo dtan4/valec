@@ -1,3 +1,10 @@
+# [v0.5.1](https://github.com/dtan4/s3url/releases/tag/v0.5.1) (2016-12-26)
+
+## Features
+
+- Delete namespace which is no longer managed [#41](https://github.com/dtan4/valec/pull/41)
+- Calculate namespace from full path [#40](https://github.com/dtan4/valec/pull/40)
+
 # [v0.5.0](https://github.com/dtan4/s3url/releases/tag/v0.5.0) (2016-12-22)
 
 ## Backward incompatible changes
@@ -7,9 +14,6 @@
 ## Features
 
 - Specify KMS key per namespace [#38](https://github.com/dtan4/valec/pull/38)
-
-## Features
-
 - Interactive encryption mode (`valec encrypt -i KEY1 KEY2`) [#34](https://github.com/dtan4/valec/pull/34)
 - Use aws-sdk-go 1.6.x [#33](https://github.com/dtan4/valec/pull/33)
 - Encrypt secrets from stdin [#32](https://github.com/dtan4/valec/pull/32)
