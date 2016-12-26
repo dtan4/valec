@@ -72,6 +72,16 @@ func doSync(cmd *cobra.Command, args []string) error {
 
 	if len(deleted) > 0 {
 		fmt.Printf("%d namespaces will be deleted.\n", len(deleted))
+
+		if !syncOpts.dryRun {
+			for _, namespace := range deleted {
+				if err := aws.DynamoDB.DeleteNamespace(rootOpts.tableName, namespace); err != nil {
+					return errors.Wrapf(err, "Failed to delete namespace. namespace=%s", namespace)
+				}
+			}
+
+			fmt.Printf("  %d namespaces were successfully deleted.\n", len(deleted))
+		}
 	}
 
 	return nil

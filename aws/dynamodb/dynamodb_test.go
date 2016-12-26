@@ -112,6 +112,38 @@ func TestDelete(t *testing.T) {
 	}
 }
 
+func TestDeleteNamespace(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	api := mock.NewMockDynamoDBAPI(ctrl)
+
+	api.EXPECT().BatchWriteItem(&dynamodb.BatchWriteItemInput{
+		RequestItems: map[string][]*dynamodb.WriteRequest{
+			"valec": []*dynamodb.WriteRequest{
+				&dynamodb.WriteRequest{
+					DeleteRequest: &dynamodb.DeleteRequest{
+						Key: map[string]*dynamodb.AttributeValue{
+							"namespace": &dynamodb.AttributeValue{
+								S: aws.String("test"),
+							},
+						},
+					},
+				},
+			},
+		},
+	}).Return(&dynamodb.BatchWriteItemOutput{}, nil)
+	client := &Client{
+		api: api,
+	}
+
+	table := "valec"
+	namespace := "test"
+	if err := client.DeleteNamespace(table, namespace); err != nil {
+		t.Errorf("Error should not be raised. error: %s", err)
+	}
+}
+
 func TestInsert(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
