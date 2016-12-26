@@ -56,27 +56,28 @@ func doSync(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	_, deleted := util.CompareStrings(srcNamespaces, dstNamespaces)
+	added, deleted := util.CompareStrings(srcNamespaces, dstNamespaces)
+
+	for _, namespace := range added {
+		msg.GreenBold.Printf("+ %s\n", namespace)
+	}
+
+	if len(added) > 0 {
+		fmt.Printf("%d namespaces will be added.\n", len(added))
+	}
 
 	for _, namespace := range deleted {
 		msg.RedBold.Printf("- %s\n", namespace)
+	}
+
+	if len(deleted) > 0 {
+		fmt.Printf("%d namespaces will be deleted.\n", len(deleted))
 	}
 
 	return nil
 }
 
 func syncFile(filename, namespace string) error {
-	namespaceExists, err := aws.DynamoDB.NamespaceExists(rootOpts.tableName, namespace)
-	if err != nil {
-		return errors.Wrapf(err, "Failed to check whether namespace exists or not. table=%s, namespace=%s", rootOpts.tableName, namespace)
-	}
-
-	if !namespaceExists {
-		msg.GreenBold.Printf("+ %s\n", namespace)
-
-		return nil
-	}
-
 	msg.Bold.Println(namespace)
 
 	_, srcSecrets, err := secret.LoadFromYAML(filename)
