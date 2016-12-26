@@ -26,10 +26,20 @@ func IsSecretFile(filename string) bool {
 }
 
 // NamespaceFromPath returns namespace from the given path
-func NamespaceFromPath(path, basedir string) string {
+func NamespaceFromPath(path, basedir string) (string, error) {
 	var namespace string
 
-	namespace = strings.Replace(path, basedir, "", 1)
+	fullpath, err := filepath.Abs(path)
+	if err != nil {
+		return "", errors.Wrapf(err, "Failed to get full path of file. filename=%s", path)
+	}
+
+	fulldir, err := filepath.Abs(basedir)
+	if err != nil {
+		return "", errors.Wrapf(err, "Failed to get full path of directory. dirname=%s", basedir)
+	}
+
+	namespace = strings.Replace(fullpath, fulldir, "", 1)
 	namespace = filepath.ToSlash(namespace)
 	namespace = yamlExtRegexp.ReplaceAllString(namespace, "")
 
@@ -37,7 +47,7 @@ func NamespaceFromPath(path, basedir string) string {
 		namespace = namespace[1:len(namespace)]
 	}
 
-	return namespace
+	return namespace, nil
 }
 
 // ListYAMLFiles parses and executes function recursively
