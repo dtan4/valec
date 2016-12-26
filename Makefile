@@ -16,7 +16,7 @@ bin/$(NAME): $(SRCS)
 ci-test:
 	echo "" > coverage.txt
 	for d in $$(go list ./... | grep -v vendor); do \
-		go test -coverprofile=profile.out -covermode=atomic -v $$d; \
+		go test -coverprofile=profile.out -covermode=atomic -race -v $$d; \
 		if [ -f profile.out ]; then \
 			cat profile.out >> coverage.txt; \
 			rm profile.out; \
@@ -61,7 +61,7 @@ install:
 
 .PHONY: test
 test:
-	go test -cover -v `glide novendor`
+	go test -cover -race -v `glide novendor`
 
 .PHONY: update-deps
 update-deps: glide
