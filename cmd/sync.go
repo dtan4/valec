@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/dtan4/valec/aws"
+	"github.com/dtan4/valec/msg"
 	"github.com/dtan4/valec/secret"
 	"github.com/dtan4/valec/util"
-	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -29,7 +29,7 @@ func doSync(cmd *cobra.Command, args []string) error {
 	dirname := args[0]
 
 	if rootOpts.noColor {
-		color.NoColor = true
+		msg.DisableColor()
 	}
 
 	files, err := util.ListYAMLFiles(dirname)
@@ -59,32 +59,25 @@ func doSync(cmd *cobra.Command, args []string) error {
 	_, deleted := util.CompareStrings(srcNamespaces, dstNamespaces)
 
 	for _, namespace := range deleted {
-		color.New(color.FgRed, color.Bold).Printf("- %s\n", namespace)
+		msg.RedBold.Printf("- %s\n", namespace)
 	}
 
 	return nil
 }
 
 func syncFile(filename, namespace string) error {
-	bold := color.New(color.Bold)
-	red := color.New(color.FgRed)
-	// redBold := color.New(color.FgRed, color.Bold)
-	green := color.New(color.FgGreen)
-	greenBold := color.New(color.FgGreen, color.Bold)
-	yellow := color.New(color.FgYellow)
-
 	namespaceExists, err := aws.DynamoDB.NamespaceExists(rootOpts.tableName, namespace)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to check whether namespace exists or not. table=%s, namespace=%s", rootOpts.tableName, namespace)
 	}
 
 	if !namespaceExists {
-		greenBold.Printf("+ %s\n", namespace)
+		msg.GreenBold.Printf("+ %s\n", namespace)
 
 		return nil
 	}
 
-	bold.Println(namespace)
+	msg.Bold.Println(namespace)
 
 	_, srcSecrets, err := secret.LoadFromYAML(filename)
 	if err != nil {
@@ -101,7 +94,7 @@ func syncFile(filename, namespace string) error {
 	if len(deleted) > 0 {
 		fmt.Printf("%  d secrets will be deleted.\n", len(deleted))
 		for _, secret := range deleted {
-			red.Printf("    - %s\n", secret.Key)
+			msg.Red.Printf("    - %s\n", secret.Key)
 		}
 
 		if !syncOpts.dryRun {
@@ -116,7 +109,7 @@ func syncFile(filename, namespace string) error {
 	if len(updated) > 0 {
 		fmt.Printf("  %d secrets will be updated.\n", len(updated))
 		for _, secret := range updated {
-			yellow.Printf("    + %s\n", secret.Key)
+			msg.Yellow.Printf("    + %s\n", secret.Key)
 		}
 
 		if !syncOpts.dryRun {
@@ -131,7 +124,7 @@ func syncFile(filename, namespace string) error {
 	if len(added) > 0 {
 		fmt.Printf("  %d secrets will be added.\n", len(added))
 		for _, secret := range added {
-			green.Printf("    + %s\n", secret.Key)
+			msg.Green.Printf("    + %s\n", secret.Key)
 		}
 
 		if !syncOpts.dryRun {
