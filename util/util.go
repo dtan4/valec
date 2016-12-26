@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/Songmu/prompter"
@@ -17,6 +18,35 @@ var (
 	separatorRegExp = regexp.MustCompile(`^#+\s*[-=]{3,}`)
 	yamlExtRegexp   = regexp.MustCompile(`\.[yY][aA]?[mM][lL]$`)
 )
+
+// CompareStrings compares two string slices
+func CompareStrings(src, dst []string) ([]string, []string) {
+	added, deleted := []string{}, []string{}
+
+	ss := map[string]int{}
+
+	for _, s := range src {
+		ss[s] = 1
+	}
+
+	for _, s := range dst {
+		ss[s] += 2
+	}
+
+	for k, v := range ss {
+		switch v {
+		case 1:
+			deleted = append(deleted, k)
+		case 2:
+			added = append(added, k)
+		}
+	}
+
+	sort.Strings(added)
+	sort.Strings(deleted)
+
+	return added, deleted
+}
 
 // IsSecretFile returns whether the given file is secret file or not
 func IsSecretFile(filename string) bool {

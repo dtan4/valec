@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/dtan4/valec/aws"
+	"github.com/dtan4/valec/msg"
 	"github.com/dtan4/valec/secret"
 	"github.com/dtan4/valec/util"
-	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -28,31 +28,59 @@ func doSync(cmd *cobra.Command, args []string) error {
 	}
 	dirname := args[0]
 
+	if rootOpts.noColor {
+		msg.DisableColor()
+	}
+
 	files, err := util.ListYAMLFiles(dirname)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
 	}
 
+	srcNamespaces, err := aws.DynamoDB.ListNamespaces(rootOpts.tableName)
+	if err != nil {
+		return errors.Wrap(err, "Failed to retrieve namespaces.")
+	}
+
+	dstNamespaces := []string{}
+
 	for _, file := range files {
-		if err := syncFile(file, dirname); err != nil {
+		namespace, err := util.NamespaceFromPath(file, dirname)
+		if err != nil {
+			return errors.Wrap(err, "Failed to get namespace.")
+		}
+		dstNamespaces = append(dstNamespaces, namespace)
+
+		if err := syncFile(file, namespace); err != nil {
 			return errors.Wrapf(err, "Failed to synchronize file. filename=%s", file)
+		}
+	}
+
+	_, deleted := util.CompareStrings(srcNamespaces, dstNamespaces)
+
+	for _, namespace := range deleted {
+		msg.RedBold.Printf("- %s\n", namespace)
+	}
+
+	if len(deleted) > 0 {
+		fmt.Printf("%d namespaces will be deleted.\n", len(deleted))
+
+		if !syncOpts.dryRun {
+			for _, namespace := range deleted {
+				if err := aws.DynamoDB.DeleteNamespace(rootOpts.tableName, namespace); err != nil {
+					return errors.Wrapf(err, "Failed to delete namespace. namespace=%s", namespace)
+				}
+			}
+
+			fmt.Printf("  %d namespaces were successfully deleted.\n", len(deleted))
 		}
 	}
 
 	return nil
 }
 
-func syncFile(filename, dirname string) error {
-	namespace, err := util.NamespaceFromPath(filename, dirname)
-	if err != nil {
-		return errors.Wrap(err, "Failed to get full path")
-	}
-
-	if rootOpts.noColor {
-		fmt.Println(namespace)
-	} else {
-		color.New(color.Bold).Println(namespace)
-	}
+func syncFile(filename, namespace string) error {
+	msg.Bold.Println(namespace)
 
 	_, srcSecrets, err := secret.LoadFromYAML(filename)
 	if err != nil {
@@ -65,18 +93,11 @@ func syncFile(filename, dirname string) error {
 	}
 
 	added, updated, deleted := srcSecrets.CompareList(dstSecrets)
-	red := color.New(color.FgRed)
-	green := color.New(color.FgGreen)
-	yellow := color.New(color.FgYellow)
 
 	if len(deleted) > 0 {
 		fmt.Printf("%  d secrets will be deleted.\n", len(deleted))
 		for _, secret := range deleted {
-			if rootOpts.noColor {
-				fmt.Printf("    - %s\n", secret.Key)
-			} else {
-				red.Printf("    - %s\n", secret.Key)
-			}
+			msg.Red.Printf("    - %s\n", secret.Key)
 		}
 
 		if !syncOpts.dryRun {
@@ -91,11 +112,7 @@ func syncFile(filename, dirname string) error {
 	if len(updated) > 0 {
 		fmt.Printf("  %d secrets will be updated.\n", len(updated))
 		for _, secret := range updated {
-			if rootOpts.noColor {
-				fmt.Printf("    + %s\n", secret.Key)
-			} else {
-				yellow.Printf("    + %s\n", secret.Key)
-			}
+			msg.Yellow.Printf("    + %s\n", secret.Key)
 		}
 
 		if !syncOpts.dryRun {
@@ -110,11 +127,7 @@ func syncFile(filename, dirname string) error {
 	if len(added) > 0 {
 		fmt.Printf("  %d secrets will be added.\n", len(added))
 		for _, secret := range added {
-			if rootOpts.noColor {
-				fmt.Printf("    + %s\n", secret.Key)
-			} else {
-				green.Printf("    + %s\n", secret.Key)
-			}
+			msg.Green.Printf("    + %s\n", secret.Key)
 		}
 
 		if !syncOpts.dryRun {

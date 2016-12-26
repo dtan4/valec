@@ -97,6 +97,31 @@ func (c *Client) Delete(table, namespace string, secrets []*secret.Secret) error
 	return nil
 }
 
+// DeleteNamespace deletes all items in the given namespace
+func (c *Client) DeleteNamespace(table, namespace string) error {
+	requestItems := make(map[string][]*dynamodb.WriteRequest)
+	requestItems[table] = []*dynamodb.WriteRequest{
+		&dynamodb.WriteRequest{
+			DeleteRequest: &dynamodb.DeleteRequest{
+				Key: map[string]*dynamodb.AttributeValue{
+					"namespace": &dynamodb.AttributeValue{
+						S: aws.String(namespace),
+					},
+				},
+			},
+		},
+	}
+
+	_, err := c.api.BatchWriteItem(&dynamodb.BatchWriteItemInput{
+		RequestItems: requestItems,
+	})
+	if err != nil {
+		return errors.Wrap(err, "Failed to delete items.")
+	}
+
+	return nil
+}
+
 // Insert creates / updates records of secrets in DynamoDB table
 func (c *Client) Insert(table, namespace string, secrets []*secret.Secret) error {
 	if len(secrets) == 0 {
@@ -199,6 +224,31 @@ func (c *Client) ListNamespaces(table string) ([]string, error) {
 	sort.Strings(namespaces)
 
 	return namespaces, nil
+}
+
+// NamespaceExists check whether the given table exists or not
+func (c *Client) NamespaceExists(table, namespace string) (bool, error) {
+	keyConditions := map[string]*dynamodb.Condition{
+		"namespace": &dynamodb.Condition{
+			ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+			AttributeValueList: []*dynamodb.AttributeValue{
+				&dynamodb.AttributeValue{
+					S: aws.String(namespace),
+				},
+			},
+		},
+	}
+	params := &dynamodb.QueryInput{
+		TableName:     aws.String(table),
+		KeyConditions: keyConditions,
+	}
+
+	resp, err := c.api.Query(params)
+	if err != nil {
+		return false, errors.Wrapf(err, "Failed to list up secrets. table=%s", table)
+	}
+
+	return len(resp.Items) > 0, nil
 }
 
 // TableExists check whether the given table exists or not
