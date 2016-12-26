@@ -28,6 +28,10 @@ func doSync(cmd *cobra.Command, args []string) error {
 	}
 	dirname := args[0]
 
+	if rootOpts.noColor {
+		color.NoColor = true
+	}
+
 	files, err := util.ListYAMLFiles(dirname)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
@@ -61,20 +65,12 @@ func syncFile(filename, dirname string) error {
 	}
 
 	if !namespaceExists {
-		if rootOpts.noColor {
-			fmt.Printf("+ %s\n", namespace)
-		} else {
-			greenBold.Printf("+ %s\n", namespace)
-		}
+		greenBold.Printf("+ %s\n", namespace)
 
 		return nil
 	}
 
-	if rootOpts.noColor {
-		fmt.Println(namespace)
-	} else {
-		bold.Println(namespace)
-	}
+	bold.Println(namespace)
 
 	_, srcSecrets, err := secret.LoadFromYAML(filename)
 	if err != nil {
@@ -91,11 +87,7 @@ func syncFile(filename, dirname string) error {
 	if len(deleted) > 0 {
 		fmt.Printf("%  d secrets will be deleted.\n", len(deleted))
 		for _, secret := range deleted {
-			if rootOpts.noColor {
-				fmt.Printf("    - %s\n", secret.Key)
-			} else {
-				red.Printf("    - %s\n", secret.Key)
-			}
+			red.Printf("    - %s\n", secret.Key)
 		}
 
 		if !syncOpts.dryRun {
@@ -110,11 +102,7 @@ func syncFile(filename, dirname string) error {
 	if len(updated) > 0 {
 		fmt.Printf("  %d secrets will be updated.\n", len(updated))
 		for _, secret := range updated {
-			if rootOpts.noColor {
-				fmt.Printf("    + %s\n", secret.Key)
-			} else {
-				yellow.Printf("    + %s\n", secret.Key)
-			}
+			yellow.Printf("    + %s\n", secret.Key)
 		}
 
 		if !syncOpts.dryRun {
@@ -129,11 +117,7 @@ func syncFile(filename, dirname string) error {
 	if len(added) > 0 {
 		fmt.Printf("  %d secrets will be added.\n", len(added))
 		for _, secret := range added {
-			if rootOpts.noColor {
-				fmt.Printf("    + %s\n", secret.Key)
-			} else {
-				green.Printf("    + %s\n", secret.Key)
-			}
+			green.Printf("    + %s\n", secret.Key)
 		}
 
 		if !syncOpts.dryRun {
