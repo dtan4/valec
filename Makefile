@@ -15,7 +15,7 @@ bin/$(NAME): $(SRCS)
 .PHONY: ci-test
 ci-test:
 	echo "" > coverage.txt
-	for d in $$(go list ./... | grep -v vendor); do \
+	for d in $$(go list ./... | grep -v vendor | grep -v aws/mock); do \
 		go test -coverprofile=profile.out -covermode=atomic -race -v $$d; \
 		if [ -f profile.out ]; then \
 			cat profile.out >> coverage.txt; \
