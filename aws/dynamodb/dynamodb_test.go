@@ -190,7 +190,7 @@ func TestInsert(t *testing.T) {
 								S: aws.String("test"),
 							},
 							"key": &dynamodb.AttributeValue{
-								S: aws.String("FOO"),
+								S: aws.String("BAR"),
 							},
 							"value": &dynamodb.AttributeValue{
 								S: aws.String("fuga"),
@@ -215,7 +215,7 @@ func TestInsert(t *testing.T) {
 			Value: "bar",
 		},
 		&secret.Secret{
-			Key:   "FOO",
+			Key:   "BAR",
 			Value: "fuga",
 		},
 	}
@@ -274,7 +274,7 @@ func TestListSecrets(t *testing.T) {
 					S: aws.String("test"),
 				},
 				"key": &dynamodb.AttributeValue{
-					S: aws.String("FOO"),
+					S: aws.String("BAR"),
 				},
 				"value": &dynamodb.AttributeValue{
 					S: aws.String("fuga"),
@@ -296,7 +296,7 @@ func TestListSecrets(t *testing.T) {
 			Value: "bar",
 		},
 		&secret.Secret{
-			Key:   "FOO",
+			Key:   "BAR",
 			Value: "fuga",
 		},
 	}
@@ -350,7 +350,7 @@ func TestListNamespaces(t *testing.T) {
 					S: aws.String("test"),
 				},
 				"key": &dynamodb.AttributeValue{
-					S: aws.String("FOO"),
+					S: aws.String("BAR"),
 				},
 				"value": &dynamodb.AttributeValue{
 					S: aws.String("fuga"),
@@ -441,7 +441,7 @@ func TestNamespaceExists(t *testing.T) {
 					S: aws.String("test"),
 				},
 				"key": &dynamodb.AttributeValue{
-					S: aws.String("FOO"),
+					S: aws.String("BAR"),
 				},
 				"value": &dynamodb.AttributeValue{
 					S: aws.String("fuga"),
