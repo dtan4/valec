@@ -118,6 +118,55 @@ func TestDeleteNamespace(t *testing.T) {
 
 	api := mock.NewMockDynamoDBAPI(ctrl)
 
+	api.EXPECT().Query(&dynamodb.QueryInput{
+		TableName: aws.String("valec"),
+		KeyConditions: map[string]*dynamodb.Condition{
+			"namespace": &dynamodb.Condition{
+				ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+				AttributeValueList: []*dynamodb.AttributeValue{
+					&dynamodb.AttributeValue{
+						S: aws.String("test"),
+					},
+				},
+			},
+		},
+	}).Return(&dynamodb.QueryOutput{
+		Items: []map[string]*dynamodb.AttributeValue{
+			map[string]*dynamodb.AttributeValue{
+				"namespace": &dynamodb.AttributeValue{
+					S: aws.String("test"),
+				},
+				"key": &dynamodb.AttributeValue{
+					S: aws.String("BAZ"),
+				},
+				"value": &dynamodb.AttributeValue{
+					S: aws.String("1"),
+				},
+			},
+			map[string]*dynamodb.AttributeValue{
+				"namespace": &dynamodb.AttributeValue{
+					S: aws.String("test"),
+				},
+				"key": &dynamodb.AttributeValue{
+					S: aws.String("FOO"),
+				},
+				"value": &dynamodb.AttributeValue{
+					S: aws.String("bar"),
+				},
+			},
+			map[string]*dynamodb.AttributeValue{
+				"namespace": &dynamodb.AttributeValue{
+					S: aws.String("test"),
+				},
+				"key": &dynamodb.AttributeValue{
+					S: aws.String("BAR"),
+				},
+				"value": &dynamodb.AttributeValue{
+					S: aws.String("fuga"),
+				},
+			},
+		},
+	}, nil)
 	api.EXPECT().BatchWriteItem(&dynamodb.BatchWriteItemInput{
 		RequestItems: map[string][]*dynamodb.WriteRequest{
 			"valec": []*dynamodb.WriteRequest{
@@ -126,6 +175,33 @@ func TestDeleteNamespace(t *testing.T) {
 						Key: map[string]*dynamodb.AttributeValue{
 							"namespace": &dynamodb.AttributeValue{
 								S: aws.String("test"),
+							},
+							"key": &dynamodb.AttributeValue{
+								S: aws.String("BAZ"),
+							},
+						},
+					},
+				},
+				&dynamodb.WriteRequest{
+					DeleteRequest: &dynamodb.DeleteRequest{
+						Key: map[string]*dynamodb.AttributeValue{
+							"namespace": &dynamodb.AttributeValue{
+								S: aws.String("test"),
+							},
+							"key": &dynamodb.AttributeValue{
+								S: aws.String("FOO"),
+							},
+						},
+					},
+				},
+				&dynamodb.WriteRequest{
+					DeleteRequest: &dynamodb.DeleteRequest{
+						Key: map[string]*dynamodb.AttributeValue{
+							"namespace": &dynamodb.AttributeValue{
+								S: aws.String("test"),
+							},
+							"key": &dynamodb.AttributeValue{
+								S: aws.String("BAR"),
 							},
 						},
 					},

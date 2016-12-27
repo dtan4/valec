@@ -72,7 +72,7 @@ func doSync(cmd *cobra.Command, args []string) error {
 				}
 			}
 
-			fmt.Printf("  %d namespaces were successfully deleted.\n", len(deleted))
+			fmt.Printf("%d namespaces were successfully deleted.\n", len(deleted))
 		}
 	}
 
