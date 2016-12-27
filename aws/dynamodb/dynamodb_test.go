@@ -11,6 +11,18 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
+func TestNewClient(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	api := mock.NewMockDynamoDBAPI(ctrl)
+	client := NewClient(api)
+
+	if client.api != api {
+		t.Errorf("client.api does not match.")
+	}
+}
+
 func TestCreateTable(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

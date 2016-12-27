@@ -9,6 +9,18 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
+func TestNewClient(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	api := mock.NewMockKMSAPI(ctrl)
+	client := NewClient(api)
+
+	if client.api != api {
+		t.Errorf("client.api does not match.")
+	}
+}
+
 func TestCreateKey(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
