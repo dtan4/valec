@@ -99,20 +99,48 @@ func (c *Client) Delete(table, namespace string, secrets []*secret.Secret) error
 
 // DeleteNamespace deletes all items in the given namespace
 func (c *Client) DeleteNamespace(table, namespace string) error {
-	requestItems := make(map[string][]*dynamodb.WriteRequest)
-	requestItems[table] = []*dynamodb.WriteRequest{
-		&dynamodb.WriteRequest{
+	keyConditions := map[string]*dynamodb.Condition{
+		"namespace": &dynamodb.Condition{
+			ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+			AttributeValueList: []*dynamodb.AttributeValue{
+				&dynamodb.AttributeValue{
+					S: aws.String(namespace),
+				},
+			},
+		},
+	}
+	params := &dynamodb.QueryInput{
+		TableName:     aws.String(table),
+		KeyConditions: keyConditions,
+	}
+
+	resp, err := c.api.Query(params)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to list up secrets. namespace=%s", namespace)
+	}
+
+	writeRequests := []*dynamodb.WriteRequest{}
+
+	for _, item := range resp.Items {
+		writeRequest := &dynamodb.WriteRequest{
 			DeleteRequest: &dynamodb.DeleteRequest{
 				Key: map[string]*dynamodb.AttributeValue{
 					"namespace": &dynamodb.AttributeValue{
 						S: aws.String(namespace),
 					},
+					"key": &dynamodb.AttributeValue{
+						S: item["key"].S,
+					},
 				},
 			},
-		},
+		}
+		writeRequests = append(writeRequests, writeRequest)
 	}
 
-	_, err := c.api.BatchWriteItem(&dynamodb.BatchWriteItemInput{
+	requestItems := make(map[string][]*dynamodb.WriteRequest)
+	requestItems[table] = writeRequests
+
+	_, err = c.api.BatchWriteItem(&dynamodb.BatchWriteItemInput{
 		RequestItems: requestItems,
 	})
 	if err != nil {
