@@ -1,3 +1,9 @@
+# [v0.5.2](https://github.com/dtan4/s3url/releases/tag/v0.5.2) (2016-12-27)
+
+## Fixes
+
+- Delete namespace correctly [#44](https://github.com/dtan4/valec/pull/44)
+
 # [v0.5.1](https://github.com/dtan4/s3url/releases/tag/v0.5.1) (2016-12-26)
 
 ## Features
