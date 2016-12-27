@@ -112,6 +112,24 @@ func TestDelete(t *testing.T) {
 	}
 }
 
+func TestDelete_nosecret(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	api := mock.NewMockDynamoDBAPI(ctrl)
+	client := &Client{
+		api: api,
+	}
+
+	table := "valec"
+	namespace := "test"
+	secrets := []*secret.Secret{}
+
+	if err := client.Delete(table, namespace, secrets); err != nil {
+		t.Errorf("Error should not be raised. error: %s", err)
+	}
+}
+
 func TestDeleteNamespace(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
