@@ -320,6 +320,97 @@ func TestDeleteNamespace(t *testing.T) {
 	}
 }
 
+func TestDeleteNamespace_30items(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	items := []map[string]*dynamodb.AttributeValue{}
+
+	for i := 0; i < 30; i++ {
+		items = append(items, map[string]*dynamodb.AttributeValue{
+			"namespace": &dynamodb.AttributeValue{
+				S: aws.String("test"),
+			},
+			"key": &dynamodb.AttributeValue{
+				S: aws.String("BAZ" + strconv.Itoa(i)),
+			},
+			"value": &dynamodb.AttributeValue{
+				S: aws.String(strconv.Itoa(i)),
+			},
+		})
+	}
+
+	writeRequests1 := []*dynamodb.WriteRequest{}
+
+	for i := 0; i < 25; i++ {
+		writeRequests1 = append(writeRequests1, &dynamodb.WriteRequest{
+			DeleteRequest: &dynamodb.DeleteRequest{
+				Key: map[string]*dynamodb.AttributeValue{
+					"namespace": &dynamodb.AttributeValue{
+						S: aws.String("test"),
+					},
+					"key": &dynamodb.AttributeValue{
+						S: aws.String("BAZ" + strconv.Itoa(i)),
+					},
+				},
+			},
+		})
+	}
+
+	writeRequests2 := []*dynamodb.WriteRequest{}
+
+	for i := 25; i < 30; i++ {
+		writeRequests2 = append(writeRequests2, &dynamodb.WriteRequest{
+			DeleteRequest: &dynamodb.DeleteRequest{
+				Key: map[string]*dynamodb.AttributeValue{
+					"namespace": &dynamodb.AttributeValue{
+						S: aws.String("test"),
+					},
+					"key": &dynamodb.AttributeValue{
+						S: aws.String("BAZ" + strconv.Itoa(i)),
+					},
+				},
+			},
+		})
+	}
+
+	api := mock.NewMockDynamoDBAPI(ctrl)
+	api.EXPECT().Query(&dynamodb.QueryInput{
+		TableName: aws.String("valec"),
+		KeyConditions: map[string]*dynamodb.Condition{
+			"namespace": &dynamodb.Condition{
+				ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+				AttributeValueList: []*dynamodb.AttributeValue{
+					&dynamodb.AttributeValue{
+						S: aws.String("test"),
+					},
+				},
+			},
+		},
+	}).Return(&dynamodb.QueryOutput{
+		Items: items,
+	}, nil)
+	api.EXPECT().BatchWriteItem(&dynamodb.BatchWriteItemInput{
+		RequestItems: map[string][]*dynamodb.WriteRequest{
+			"valec": writeRequests1,
+		},
+	}).Return(&dynamodb.BatchWriteItemOutput{}, nil)
+	api.EXPECT().BatchWriteItem(&dynamodb.BatchWriteItemInput{
+		RequestItems: map[string][]*dynamodb.WriteRequest{
+			"valec": writeRequests2,
+		},
+	}).Return(&dynamodb.BatchWriteItemOutput{}, nil)
+	client := &Client{
+		api: api,
+	}
+
+	table := "valec"
+	namespace := "test"
+	if err := client.DeleteNamespace(table, namespace); err != nil {
+		t.Errorf("Error should not be raised. error: %s", err)
+	}
+}
+
 func TestInsert(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

@@ -108,32 +108,29 @@ func (c *Client) DeleteNamespace(table, namespace string) error {
 		return errors.Wrapf(err, "Failed to list up secrets. namespace=%s", namespace)
 	}
 
-	writeRequests := []*dynamodb.WriteRequest{}
+	secrets := []*secret.Secret{}
 
 	for _, item := range resp.Items {
-		writeRequest := &dynamodb.WriteRequest{
-			DeleteRequest: &dynamodb.DeleteRequest{
-				Key: map[string]*dynamodb.AttributeValue{
-					"namespace": &dynamodb.AttributeValue{
-						S: aws.String(namespace),
-					},
-					"key": &dynamodb.AttributeValue{
-						S: item["key"].S,
-					},
-				},
-			},
+		secret := &secret.Secret{
+			Key:   *item["key"].S,
+			Value: *item["value"].S,
 		}
-		writeRequests = append(writeRequests, writeRequest)
+
+		secrets = append(secrets, secret)
 	}
 
-	requestItems := make(map[string][]*dynamodb.WriteRequest)
-	requestItems[table] = writeRequests
+	for i := 0; i < (len(secrets)-1)/batchWriteItemMax+1; i++ {
+		var max int
 
-	_, err = c.api.BatchWriteItem(&dynamodb.BatchWriteItemInput{
-		RequestItems: requestItems,
-	})
-	if err != nil {
-		return errors.Wrap(err, "Failed to delete items.")
+		if len(secrets[i*batchWriteItemMax:]) >= batchWriteItemMax {
+			max = (i + 1) * batchWriteItemMax
+		} else {
+			max = i*batchWriteItemMax + len(secrets[i*batchWriteItemMax:])
+		}
+
+		if err := c.doBatchDelete(table, namespace, secrets[i*batchWriteItemMax:max]); err != nil {
+			return errors.Wrap(err, "Failed to delete items.")
+		}
 	}
 
 	return nil
