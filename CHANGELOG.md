@@ -1,3 +1,9 @@
+# [v0.5.3](https://github.com/dtan4/valec/releases/tag/v0.5.3) (2017-01-17)
+
+## Fixes
+
+- Divide BatchWriteItem API requests for many items [#44](https://github.com/dtan4/valec/pull/46)
+
 # [v0.5.2](https://github.com/dtan4/valec/releases/tag/v0.5.2) (2016-12-27)
 
 ## Fixes
