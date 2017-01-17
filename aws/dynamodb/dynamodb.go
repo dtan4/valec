@@ -10,6 +10,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	// http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html
+	batchWriteItemMax = 25
+)
+
 // Client represents the wrapper of DynamoDB API client
 type Client struct {
 	api dynamodbiface.DynamoDBAPI
@@ -156,12 +161,28 @@ func (c *Client) Insert(table, namespace string, secrets []*secret.Secret) error
 		return nil
 	}
 
+	for i := 0; i < (len(secrets)-1)/batchWriteItemMax+1; i++ {
+		var max int
+
+		if len(secrets[i*batchWriteItemMax:]) >= batchWriteItemMax {
+			max = (i + 1) * batchWriteItemMax
+		} else {
+			max = i*batchWriteItemMax + len(secrets[i*batchWriteItemMax:])
+		}
+
+		if err := c.doBatchWriteItem(table, namespace, secrets[i*batchWriteItemMax:max]); err != nil {
+			return errors.Wrap(err, "Failed to insert items.")
+		}
+	}
+
+	return nil
+}
+
+func (c *Client) doBatchWriteItem(table, namespace string, secrets []*secret.Secret) error {
 	writeRequests := []*dynamodb.WriteRequest{}
 
-	var writeRequest *dynamodb.WriteRequest
-
 	for _, secret := range secrets {
-		writeRequest = &dynamodb.WriteRequest{
+		writeRequests = append(writeRequests, &dynamodb.WriteRequest{
 			PutRequest: &dynamodb.PutRequest{
 				Item: map[string]*dynamodb.AttributeValue{
 					"namespace": &dynamodb.AttributeValue{
@@ -175,8 +196,7 @@ func (c *Client) Insert(table, namespace string, secrets []*secret.Secret) error
 					},
 				},
 			},
-		}
-		writeRequests = append(writeRequests, writeRequest)
+		})
 	}
 
 	requestItems := make(map[string][]*dynamodb.WriteRequest)

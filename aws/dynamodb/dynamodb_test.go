@@ -2,6 +2,7 @@ package dynamodb
 
 import (
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -324,6 +325,81 @@ func TestInsert(t *testing.T) {
 			Key:   "BAR",
 			Value: "fuga",
 		},
+	}
+
+	table := "valec"
+	namespace := "test"
+	if err := client.Insert(table, namespace, secrets); err != nil {
+		t.Errorf("Error should not be raised. error: %s", err)
+	}
+}
+
+func TestInsert_30items(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	writeRequests1 := []*dynamodb.WriteRequest{}
+
+	for i := 0; i < 25; i++ {
+		writeRequests1 = append(writeRequests1, &dynamodb.WriteRequest{
+			PutRequest: &dynamodb.PutRequest{
+				Item: map[string]*dynamodb.AttributeValue{
+					"namespace": &dynamodb.AttributeValue{
+						S: aws.String("test"),
+					},
+					"key": &dynamodb.AttributeValue{
+						S: aws.String("BAZ" + strconv.Itoa(i)),
+					},
+					"value": &dynamodb.AttributeValue{
+						S: aws.String(strconv.Itoa(i)),
+					},
+				},
+			},
+		})
+	}
+
+	writeRequests2 := []*dynamodb.WriteRequest{}
+
+	for i := 25; i < 30; i++ {
+		writeRequests2 = append(writeRequests2, &dynamodb.WriteRequest{
+			PutRequest: &dynamodb.PutRequest{
+				Item: map[string]*dynamodb.AttributeValue{
+					"namespace": &dynamodb.AttributeValue{
+						S: aws.String("test"),
+					},
+					"key": &dynamodb.AttributeValue{
+						S: aws.String("BAZ" + strconv.Itoa(i)),
+					},
+					"value": &dynamodb.AttributeValue{
+						S: aws.String(strconv.Itoa(i)),
+					},
+				},
+			},
+		})
+	}
+
+	api := mock.NewMockDynamoDBAPI(ctrl)
+	api.EXPECT().BatchWriteItem(&dynamodb.BatchWriteItemInput{
+		RequestItems: map[string][]*dynamodb.WriteRequest{
+			"valec": writeRequests1,
+		},
+	}).Return(&dynamodb.BatchWriteItemOutput{}, nil)
+	api.EXPECT().BatchWriteItem(&dynamodb.BatchWriteItemInput{
+		RequestItems: map[string][]*dynamodb.WriteRequest{
+			"valec": writeRequests2,
+		},
+	}).Return(&dynamodb.BatchWriteItemOutput{}, nil)
+	client := &Client{
+		api: api,
+	}
+
+	secrets := []*secret.Secret{}
+
+	for i := 0; i < 30; i++ {
+		secrets = append(secrets, &secret.Secret{
+			Key:   "BAZ" + strconv.Itoa(i),
+			Value: strconv.Itoa(i),
+		})
 	}
 
 	table := "valec"
