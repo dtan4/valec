@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/dtan4/valec/aws"
@@ -59,13 +60,24 @@ func doDump(cmd *cobra.Command, args []string) error {
 		}
 	} else {
 		body := []byte(strings.Join(dotenv, "\n") + "\n")
-		if dumpOpts.override {
-			if err := util.WriteFile(dumpOpts.output, body); err != nil {
-				return errors.Wrapf(err, "Failed to write dotenv file. filename=%s", dumpOpts.output)
+
+		if _, err := os.Stat(dumpOpts.output); err != nil {
+			if os.IsNotExist(err) {
+				if err2 := util.WriteFile(dumpOpts.output, body); err != nil {
+					return errors.Wrapf(err2, "Failed to write dotenv file. filename=%s", dumpOpts.output)
+				}
+			} else {
+				return errors.Wrapf(err, "Failed to open dotenv file. filename=%s", dumpOpts.output)
 			}
 		} else {
-			if err := util.WriteFileWithoutSection(dumpOpts.output, body); err != nil {
-				return errors.Wrapf(err, "Failed to write dotenv file. filename=%s", dumpOpts.output)
+			if dumpOpts.override {
+				if err := util.WriteFile(dumpOpts.output, body); err != nil {
+					return errors.Wrapf(err, "Failed to write dotenv file. filename=%s", dumpOpts.output)
+				}
+			} else {
+				if err := util.WriteFileWithoutSection(dumpOpts.output, body); err != nil {
+					return errors.Wrapf(err, "Failed to write dotenv file. filename=%s", dumpOpts.output)
+				}
 			}
 		}
 	}
