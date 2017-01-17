@@ -69,34 +69,18 @@ func (c *Client) Delete(table, namespace string, secrets []*secret.Secret) error
 		return nil
 	}
 
-	writeRequests := []*dynamodb.WriteRequest{}
+	for i := 0; i < (len(secrets)-1)/batchWriteItemMax+1; i++ {
+		var max int
 
-	var writeRequest *dynamodb.WriteRequest
-
-	for _, secret := range secrets {
-		writeRequest = &dynamodb.WriteRequest{
-			DeleteRequest: &dynamodb.DeleteRequest{
-				Key: map[string]*dynamodb.AttributeValue{
-					"namespace": &dynamodb.AttributeValue{
-						S: aws.String(namespace),
-					},
-					"key": &dynamodb.AttributeValue{
-						S: aws.String(secret.Key),
-					},
-				},
-			},
+		if len(secrets[i*batchWriteItemMax:]) >= batchWriteItemMax {
+			max = (i + 1) * batchWriteItemMax
+		} else {
+			max = i*batchWriteItemMax + len(secrets[i*batchWriteItemMax:])
 		}
-		writeRequests = append(writeRequests, writeRequest)
-	}
 
-	requestItems := make(map[string][]*dynamodb.WriteRequest)
-	requestItems[table] = writeRequests
-
-	_, err := c.api.BatchWriteItem(&dynamodb.BatchWriteItemInput{
-		RequestItems: requestItems,
-	})
-	if err != nil {
-		return errors.Wrap(err, "Failed to delete items.")
+		if err := c.doBatchDelete(table, namespace, secrets[i*batchWriteItemMax:max]); err != nil {
+			return errors.Wrap(err, "Failed to delete items.")
+		}
 	}
 
 	return nil
@@ -155,6 +139,37 @@ func (c *Client) DeleteNamespace(table, namespace string) error {
 	return nil
 }
 
+func (c *Client) doBatchDelete(table, namespace string, secrets []*secret.Secret) error {
+	writeRequests := []*dynamodb.WriteRequest{}
+
+	for _, secret := range secrets {
+		writeRequests = append(writeRequests, &dynamodb.WriteRequest{
+			DeleteRequest: &dynamodb.DeleteRequest{
+				Key: map[string]*dynamodb.AttributeValue{
+					"namespace": &dynamodb.AttributeValue{
+						S: aws.String(namespace),
+					},
+					"key": &dynamodb.AttributeValue{
+						S: aws.String(secret.Key),
+					},
+				},
+			},
+		})
+	}
+
+	requestItems := make(map[string][]*dynamodb.WriteRequest)
+	requestItems[table] = writeRequests
+
+	_, err := c.api.BatchWriteItem(&dynamodb.BatchWriteItemInput{
+		RequestItems: requestItems,
+	})
+	if err != nil {
+		return errors.Wrap(err, "Failed to insert items.")
+	}
+
+	return nil
+}
+
 // Insert creates / updates records of secrets in DynamoDB table
 func (c *Client) Insert(table, namespace string, secrets []*secret.Secret) error {
 	if len(secrets) == 0 {
@@ -170,7 +185,7 @@ func (c *Client) Insert(table, namespace string, secrets []*secret.Secret) error
 			max = i*batchWriteItemMax + len(secrets[i*batchWriteItemMax:])
 		}
 
-		if err := c.doBatchWriteItem(table, namespace, secrets[i*batchWriteItemMax:max]); err != nil {
+		if err := c.doBatchInsert(table, namespace, secrets[i*batchWriteItemMax:max]); err != nil {
 			return errors.Wrap(err, "Failed to insert items.")
 		}
 	}
@@ -178,7 +193,7 @@ func (c *Client) Insert(table, namespace string, secrets []*secret.Secret) error
 	return nil
 }
 
-func (c *Client) doBatchWriteItem(table, namespace string, secrets []*secret.Secret) error {
+func (c *Client) doBatchInsert(table, namespace string, secrets []*secret.Secret) error {
 	writeRequests := []*dynamodb.WriteRequest{}
 
 	for _, secret := range secrets {
