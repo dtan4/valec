@@ -61,4 +61,6 @@ func doExec(cmd *cobra.Command, args []string) error {
 
 func init() {
 	RootCmd.AddCommand(execCmd)
+
+	execCmd.Flags().SetInterspersed(false)
 }
