@@ -49,10 +49,6 @@ dist:
 	$(DIST_DIRS) zip -r $(NAME)-$(VERSION)-{}.zip {} \; && \
 	cd ..
 
-.PHONY: git-tag
-git-tag:
-	git tag $(VERSION)
-
 .PHONY: glide
 glide:
 ifeq ($(shell command -v glide 2> /dev/null),)
@@ -62,6 +58,11 @@ endif
 .PHONY: install
 install:
 	go install $(LDFLAGS)
+
+.PHONY: release
+release:
+	git tag $(VERSION)
+	git push origin $(VERSION)
 
 .PHONY: test
 test:
