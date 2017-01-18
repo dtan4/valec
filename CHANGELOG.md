@@ -1,3 +1,10 @@
+# [v0.5.4](https://github.com/dtan4/valec/releases/tag/v0.5.4) (2017-01-18)
+
+## Fixes
+
+- Stop parsing flags which locates after subcommand [#50](https://github.com/dtan4/valec/pull/50)
+- Create output file if it does not exist [#48](https://github.com/dtan4/valec/pull/48)
+
 # [v0.5.3](https://github.com/dtan4/valec/releases/tag/v0.5.3) (2017-01-17)
 
 ## Fixes
