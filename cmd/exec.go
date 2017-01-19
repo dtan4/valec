@@ -48,6 +48,7 @@ func doExec(cmd *cobra.Command, args []string) error {
 	execCmd.Env = envs
 	execCmd.Stderr = os.Stderr
 	execCmd.Stdout = os.Stdout
+	execCmd.Stdin = os.Stdin
 	err = execCmd.Run()
 
 	if execCmd.Process == nil {
