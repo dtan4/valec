@@ -1,3 +1,9 @@
+# [v0.5.5](https://github.com/dtan4/valec/releases/tag/v0.5.5) (2017-01-20)
+
+## Fixes
+
+- Read stdin with `valec exec` [#52](https://github.com/dtan4/valec/pull/52)
+
 # [v0.5.4](https://github.com/dtan4/valec/releases/tag/v0.5.4) (2017-01-18)
 
 ## Fixes
