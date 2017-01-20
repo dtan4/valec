@@ -10,9 +10,10 @@ import (
 
 // namespacesCmd represents the namespaces command
 var namespacesCmd = &cobra.Command{
-	Use:   "namespaces",
-	Short: "List all namespaces",
-	RunE:  doNamespaces,
+	Use:     "namespaces",
+	Aliases: []string{"ns"},
+	Short:   "List all namespaces",
+	RunE:    doNamespaces,
 }
 
 func doNamespaces(cmd *cobra.Command, args []string) error {

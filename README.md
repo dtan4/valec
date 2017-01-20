@@ -208,7 +208,7 @@ HOGE: fuga
 $ valec list -f hoge.yaml
 ```
 
-### `valec namespaces`
+### `valec namespaces`, `valec ns`
 
 List all namespaces
 
