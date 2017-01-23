@@ -1,3 +1,9 @@
+# [v0.5.6](https://github.com/dtan4/valec/releases/tag/v0.5.6) (2017-01-23)
+
+## Features
+
+- Add alias `valec ns` for `valec namespaces` [#54](https://github.com/dtan4/valec/pull/54)
+
 # [v0.5.5](https://github.com/dtan4/valec/releases/tag/v0.5.5) (2017-01-20)
 
 ## Fixes
