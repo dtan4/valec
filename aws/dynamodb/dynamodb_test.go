@@ -411,6 +411,111 @@ func TestDeleteNamespace_30items(t *testing.T) {
 	}
 }
 
+func TestGet(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	api := mock.NewMockDynamoDBAPI(ctrl)
+
+	api.EXPECT().Query(&dynamodb.QueryInput{
+		TableName: aws.String("valec"),
+		KeyConditions: map[string]*dynamodb.Condition{
+			"namespace": &dynamodb.Condition{
+				ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+				AttributeValueList: []*dynamodb.AttributeValue{
+					&dynamodb.AttributeValue{
+						S: aws.String("test"),
+					},
+				},
+			},
+			"key": &dynamodb.Condition{
+				ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+				AttributeValueList: []*dynamodb.AttributeValue{
+					&dynamodb.AttributeValue{
+						S: aws.String("FOO"),
+					},
+				},
+			},
+		},
+	}).Return(&dynamodb.QueryOutput{
+		Items: []map[string]*dynamodb.AttributeValue{
+			map[string]*dynamodb.AttributeValue{
+				"namespace": &dynamodb.AttributeValue{
+					S: aws.String("test"),
+				},
+				"key": &dynamodb.AttributeValue{
+					S: aws.String("FOO"),
+				},
+				"value": &dynamodb.AttributeValue{
+					S: aws.String("bar"),
+				},
+			},
+		},
+	}, nil)
+	client := &Client{
+		api: api,
+	}
+
+	expected := &secret.Secret{
+		Key:   "FOO",
+		Value: "bar",
+	}
+
+	table := "valec"
+	namespace := "test"
+	key := "FOO"
+	actual, err := client.Get(table, namespace, key)
+	if err != nil {
+		t.Errorf("Error should not be raised. error: %s", err)
+	}
+
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("Secret does not match. expected: %v, actual: %v", expected, actual)
+	}
+}
+
+func TestGet_nosecret(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	api := mock.NewMockDynamoDBAPI(ctrl)
+
+	api.EXPECT().Query(&dynamodb.QueryInput{
+		TableName: aws.String("valec"),
+		KeyConditions: map[string]*dynamodb.Condition{
+			"namespace": &dynamodb.Condition{
+				ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+				AttributeValueList: []*dynamodb.AttributeValue{
+					&dynamodb.AttributeValue{
+						S: aws.String("test"),
+					},
+				},
+			},
+			"key": &dynamodb.Condition{
+				ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+				AttributeValueList: []*dynamodb.AttributeValue{
+					&dynamodb.AttributeValue{
+						S: aws.String("FOOBAR"),
+					},
+				},
+			},
+		},
+	}).Return(&dynamodb.QueryOutput{
+		Items: []map[string]*dynamodb.AttributeValue{},
+	}, nil)
+	client := &Client{
+		api: api,
+	}
+
+	table := "valec"
+	namespace := "test"
+	key := "FOOBAR"
+	_, err := client.Get(table, namespace, key)
+	if err == nil {
+		t.Errorf("Error should be raised.")
+	}
+}
+
 func TestInsert(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

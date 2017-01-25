@@ -167,6 +167,46 @@ func (c *Client) doBatchDelete(table, namespace string, secrets []*secret.Secret
 	return nil
 }
 
+// Get returns a secret with the given key
+func (c *Client) Get(table, namespace, key string) (*secret.Secret, error) {
+	keyConditions := map[string]*dynamodb.Condition{
+		"namespace": &dynamodb.Condition{
+			ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+			AttributeValueList: []*dynamodb.AttributeValue{
+				&dynamodb.AttributeValue{
+					S: aws.String(namespace),
+				},
+			},
+		},
+		"key": &dynamodb.Condition{
+			ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+			AttributeValueList: []*dynamodb.AttributeValue{
+				&dynamodb.AttributeValue{
+					S: aws.String(key),
+				},
+			},
+		},
+	}
+	params := &dynamodb.QueryInput{
+		TableName:     aws.String(table),
+		KeyConditions: keyConditions,
+	}
+
+	resp, err := c.api.Query(params)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to get secret. namespace=%s, key=%s", namespace, key)
+	}
+
+	if len(resp.Items) == 0 {
+		return nil, errors.Errorf("No secret matched. namespace=%s, key=%s", namespace, key)
+	}
+
+	return &secret.Secret{
+		Key:   *resp.Items[0]["key"].S,
+		Value: *resp.Items[0]["value"].S,
+	}, nil
+}
+
 // Insert creates / updates records of secrets in DynamoDB table
 func (c *Client) Insert(table, namespace string, secrets []*secret.Secret) error {
 	if len(secrets) == 0 {
