@@ -104,11 +104,11 @@ func (ss Secrets) SaveAsYAML(filename, kmsKey string) error {
 
 	body, err := yaml.Marshal(y)
 	if err != nil {
-		return errors.Wrap(err, "Failed to convert secrets as YAML.")
+		return errors.Wrap(err, "Failed to convert secrets as YAML")
 	}
 
 	if err := ioutil.WriteFile(filename, body, 0644); err != nil {
-		return errors.Wrapf(err, "Failed to save file. filename=%s", filename)
+		return errors.Wrapf(err, "Failed to save file %s", filename)
 	}
 
 	return nil
@@ -118,13 +118,13 @@ func (ss Secrets) SaveAsYAML(filename, kmsKey string) error {
 func LoadFromYAML(filename string) (string, Secrets, error) {
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return "", Secrets{}, errors.Wrapf(err, "Failed to read secret file. filename=%s", filename)
+		return "", Secrets{}, errors.Wrapf(err, "Failed to read secret file %s", filename)
 	}
 
 	var y YAML
 
 	if err := yaml.Unmarshal(body, &y); err != nil {
-		return "", Secrets{}, errors.Wrapf(err, "Failed to parse secret file as YAML. filename=%s", filename)
+		return "", Secrets{}, errors.Wrapf(err, "Failed to parse secret file %s as YAML", filename)
 	}
 
 	return y.KMSKey, y.Secrets, nil

@@ -27,12 +27,12 @@ func Initialize(region string) error {
 	if region == "" {
 		sess, err = session.NewSession()
 		if err != nil {
-			return errors.Wrap(err, "Failed to create new AWS session.")
+			return errors.Wrap(err, "Failed to create new AWS session")
 		}
 	} else {
 		sess, err = session.NewSession(&aws.Config{Region: aws.String(region)})
 		if err != nil {
-			return errors.Wrap(err, "Failed to create new AWS session.")
+			return errors.Wrap(err, "Failed to create new AWS session")
 		}
 	}
 

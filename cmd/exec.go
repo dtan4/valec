@@ -24,13 +24,13 @@ Stored secrets are consumed as environment variables.
 
 func doExec(cmd *cobra.Command, args []string) error {
 	if len(args) < 2 {
-		return errors.New("Please specify namespace and command.")
+		return errors.New("Please specify namespace and command")
 	}
 	namespace := args[0]
 
 	secrets, err := aws.DynamoDB.ListSecrets(rootOpts.tableName, namespace)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to load secrets from DynamoDB. namespace=%s", namespace)
+		return errors.Wrapf(err, "Failed to load secrets in %q from DynamoDB", namespace)
 	}
 
 	envs := os.Environ()
@@ -38,7 +38,7 @@ func doExec(cmd *cobra.Command, args []string) error {
 	for _, secret := range secrets {
 		plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", secret.Key, secret.Value)
+			return errors.Wrapf(err, "Failed to decrypt secret %q", secret.Key)
 		}
 
 		envs = append(envs, fmt.Sprintf("%s=%s", secret.Key, plainValue))
@@ -52,7 +52,7 @@ func doExec(cmd *cobra.Command, args []string) error {
 	err = execCmd.Run()
 
 	if execCmd.Process == nil {
-		return errors.Wrap(err, "Failed to execute command.")
+		return errors.Wrap(err, "Failed to execute command")
 	}
 
 	os.Exit(execCmd.ProcessState.Sys().(syscall.WaitStatus).ExitStatus())

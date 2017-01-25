@@ -24,7 +24,7 @@ var syncOpts = struct {
 
 func doSync(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
-		return errors.New("Please specify secret directory.")
+		return errors.New("Please specify secret directory")
 	}
 	dirname := args[0]
 
@@ -34,12 +34,12 @@ func doSync(cmd *cobra.Command, args []string) error {
 
 	files, err := util.ListYAMLFiles(dirname)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
+		return errors.Wrapf(err, "Failed to read directory %s", dirname)
 	}
 
 	srcNamespaces, err := aws.DynamoDB.ListNamespaces(rootOpts.tableName)
 	if err != nil {
-		return errors.Wrap(err, "Failed to retrieve namespaces.")
+		return errors.Wrap(err, "Failed to retrieve namespaces")
 	}
 
 	dstNamespaces := []string{}
@@ -47,12 +47,12 @@ func doSync(cmd *cobra.Command, args []string) error {
 	for _, file := range files {
 		namespace, err := util.NamespaceFromPath(file, dirname)
 		if err != nil {
-			return errors.Wrap(err, "Failed to get namespace.")
+			return errors.Wrap(err, "Failed to get namespace")
 		}
 		dstNamespaces = append(dstNamespaces, namespace)
 
 		if err := syncFile(file, namespace); err != nil {
-			return errors.Wrapf(err, "Failed to synchronize file. filename=%s", file)
+			return errors.Wrapf(err, "Failed to synchronize file %s", file)
 		}
 	}
 
@@ -68,7 +68,7 @@ func doSync(cmd *cobra.Command, args []string) error {
 		if !syncOpts.dryRun {
 			for _, namespace := range deleted {
 				if err := aws.DynamoDB.DeleteNamespace(rootOpts.tableName, namespace); err != nil {
-					return errors.Wrapf(err, "Failed to delete namespace. namespace=%s", namespace)
+					return errors.Wrapf(err, "Failed to delete namespace %q", namespace)
 				}
 			}
 
@@ -84,12 +84,12 @@ func syncFile(filename, namespace string) error {
 
 	_, srcSecrets, err := secret.LoadFromYAML(filename)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to load secrets. filename=%s", filename)
+		return errors.Wrapf(err, "Failed to load secrets from %s", filename)
 	}
 
 	dstSecrets, err := aws.DynamoDB.ListSecrets(rootOpts.tableName, namespace)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to retrieve secrets. namespace=%s", namespace)
+		return errors.Wrapf(err, "Failed to retrieve secrets in namespace %q", namespace)
 	}
 
 	added, updated, deleted := srcSecrets.CompareList(dstSecrets)
@@ -102,7 +102,7 @@ func syncFile(filename, namespace string) error {
 
 		if !syncOpts.dryRun {
 			if err := aws.DynamoDB.Delete(rootOpts.tableName, namespace, deleted); err != nil {
-				return errors.Wrapf(err, "Failed to delete secrets. namespace=%s", namespace)
+				return errors.Wrapf(err, "Failed to delete secrets in namespace %q", namespace)
 			}
 
 			fmt.Printf("  %d secrets were successfully deleted.\n", len(deleted))
@@ -117,7 +117,7 @@ func syncFile(filename, namespace string) error {
 
 		if !syncOpts.dryRun {
 			if err := aws.DynamoDB.Insert(rootOpts.tableName, namespace, updated); err != nil {
-				return errors.Wrapf(err, "Failed to insert secrets. namespace=%s")
+				return errors.Wrapf(err, "Failed to insert secrets to namespace %q", namespace)
 			}
 
 			fmt.Printf("  %d secrets were successfully updated.\n", len(updated))
@@ -132,7 +132,7 @@ func syncFile(filename, namespace string) error {
 
 		if !syncOpts.dryRun {
 			if err := aws.DynamoDB.Insert(rootOpts.tableName, namespace, added); err != nil {
-				return errors.Wrapf(err, "Failed to insert secrets. namespace=%s")
+				return errors.Wrapf(err, "Failed to insert secrets to namespace %q")
 			}
 
 			fmt.Printf("  %d secrets were successfully added.\n", len(added))

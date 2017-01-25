@@ -27,7 +27,7 @@ func (c *Client) CreateKey() (string, error) {
 		Description: aws.String("Key for Valec"),
 	})
 	if err != nil {
-		return "", errors.Wrap(err, "Failed to create key.")
+		return "", errors.Wrap(err, "Failed to create key")
 	}
 
 	return *resp.KeyMetadata.KeyId, nil
@@ -40,7 +40,7 @@ func (c *Client) CreateKeyAlias(keyID, keyAlias string) error {
 		TargetKeyId: aws.String(keyID),
 	})
 	if err != nil {
-		return errors.Wrapf(err, "Failed to create key alias. keyID=%s, keyAlias=%s", keyID, keyAlias)
+		return errors.Wrapf(err, "Failed to create key alias %q for ID %q", keyAlias, keyID)
 	}
 
 	return nil
@@ -50,7 +50,7 @@ func (c *Client) CreateKeyAlias(keyID, keyAlias string) error {
 func (c *Client) DecryptBase64(key, cipherText string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(cipherText)
 	if err != nil {
-		return "", errors.Wrapf(err, "Failed to decode as base64 string. text=%q", cipherText)
+		return "", errors.Wrapf(err, "Failed to decode test %q as base64 string", cipherText)
 	}
 
 	resp, err := c.api.Decrypt(&kms.DecryptInput{
@@ -60,7 +60,7 @@ func (c *Client) DecryptBase64(key, cipherText string) (string, error) {
 		},
 	})
 	if err != nil {
-		return "", errors.Wrapf(err, "Failed to decrypt the given cipherText. key=%s, cipherText=%q", key, cipherText)
+		return "", errors.Wrapf(err, "Failed to decrypt the given cipherText %q with key %q", cipherText, key)
 	}
 
 	return string(resp.Plaintext), nil
@@ -77,7 +77,7 @@ func (c *Client) EncryptBase64(keyAlias, key, text string) (string, error) {
 		},
 	})
 	if err != nil {
-		return "", errors.Wrapf(err, "Failed to encrypt text. keyAlias=%s, key=%q, text=%q", keyAlias, key, text)
+		return "", errors.Wrapf(err, "Failed to encrypt text with key %q", keyAlias)
 	}
 
 	return base64.StdEncoding.EncodeToString(resp.CiphertextBlob), nil
@@ -87,7 +87,7 @@ func (c *Client) EncryptBase64(keyAlias, key, text string) (string, error) {
 func (c *Client) KeyExists(keyAlias string) (bool, error) {
 	resp, err := c.api.ListAliases(&kms.ListAliasesInput{})
 	if err != nil {
-		return false, errors.Wrap(err, "Failed to retrieve key aliases.")
+		return false, errors.Wrap(err, "Failed to list key aliases")
 	}
 
 	aliasWithPrefix := keyAliasWithPrefix(keyAlias)

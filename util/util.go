@@ -61,12 +61,12 @@ func NamespaceFromPath(path, basedir string) (string, error) {
 
 	fullpath, err := filepath.Abs(path)
 	if err != nil {
-		return "", errors.Wrapf(err, "Failed to get full path of file. filename=%s", path)
+		return "", errors.Wrapf(err, "Failed to get full path of file %s", path)
 	}
 
 	fulldir, err := filepath.Abs(basedir)
 	if err != nil {
-		return "", errors.Wrapf(err, "Failed to get full path of directory. dirname=%s", basedir)
+		return "", errors.Wrapf(err, "Failed to get full path of directory %s", basedir)
 	}
 
 	namespace = strings.Replace(fullpath, fulldir, "", 1)
@@ -86,7 +86,7 @@ func ListYAMLFiles(dirname string) ([]string, error) {
 
 	fs, err := ioutil.ReadDir(dirname)
 	if err != nil {
-		return []string{}, errors.Wrapf(err, "Failed to open directory. dirname=%s")
+		return []string{}, errors.Wrapf(err, "Failed to open directory %s")
 	}
 
 	for _, file := range fs {
@@ -95,7 +95,7 @@ func ListYAMLFiles(dirname string) ([]string, error) {
 
 			childFiles, err := ListYAMLFiles(childDir)
 			if err != nil {
-				return []string{}, errors.Wrapf(err, "failed to parse directory. dirname=%s", childDir)
+				return []string{}, errors.Wrapf(err, "failed to parse directory %s", childDir)
 			}
 
 			files = append(files, childFiles...)
@@ -135,7 +135,7 @@ func ScanNoecho(key string) string {
 // WriteFile writes body to file
 func WriteFile(filename string, body []byte) error {
 	if err := ioutil.WriteFile(filename, body, 0644); err != nil {
-		return errors.Wrapf(err, "Failed to save file. filename=%s", filename)
+		return errors.Wrapf(err, "Failed to save file %s", filename)
 	}
 
 	return nil
@@ -145,7 +145,7 @@ func WriteFile(filename string, body []byte) error {
 func WriteFileWithoutSection(filename string, body []byte) error {
 	fp, err := os.Open(filename)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to open file. filename=%s", filename)
+		return errors.Wrapf(err, "Failed to open file %s", filename)
 	}
 
 	sc := bufio.NewScanner(fp)
@@ -167,7 +167,7 @@ func WriteFileWithoutSection(filename string, body []byte) error {
 	body = append(body, []byte(strings.Join(preserveLines, "\n")+"\n")...)
 
 	if err := ioutil.WriteFile(filename, body, 0644); err != nil {
-		return errors.Wrapf(err, "Failed to save file. filename=%s", filename)
+		return errors.Wrapf(err, "Failed to save file %s", filename)
 	}
 
 	return nil

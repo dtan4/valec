@@ -24,7 +24,7 @@ var RootCmd = &cobra.Command{
 Valec enables you to manage application secrets in your favorite VCS.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if err := aws.Initialize(rootOpts.region); err != nil {
-			return errors.Wrap(err, "Failed to initialize AWS API clients.")
+			return errors.Wrap(err, "Failed to initialize AWS API clients")
 		}
 
 		return nil

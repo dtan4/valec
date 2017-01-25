@@ -29,17 +29,17 @@ var dotenvOpts = struct {
 
 func doDotenv(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return errors.New("Please specify namespace.")
+		return errors.New("Please specify namespace")
 	}
 	namespace := args[0]
 
 	secrets, err := aws.DynamoDB.ListSecrets(rootOpts.tableName, namespace)
 	if err != nil {
-		return errors.Wrap(err, "Failed to retrieve secrets.")
+		return errors.Wrap(err, "Failed to retrieve secrets")
 	}
 
 	if len(secrets) == 0 {
-		return errors.Errorf("Namespace %s does not exist.", namespace)
+		return errors.Errorf("Namespace %s does not exist", namespace)
 	}
 
 	var (
@@ -53,21 +53,21 @@ func doDotenv(cmd *cobra.Command, args []string) error {
 
 			dotenv, err2 = dumpAll(secrets, dotenvOpts.quote)
 			if err2 != nil {
-				return errors.Wrap(err, "Failed to dump all secrets.")
+				return errors.Wrap(err, "Failed to dump all secrets")
 			}
 		} else {
-			return errors.Wrapf(err, "Failed to get stat of dotenv template. filename=%s", dotenvSampleName)
+			return errors.Wrapf(err, "Failed to get stat of dotenv template %s", dotenvSampleName)
 		}
 	} else {
 		dotenv, err2 = dumpWithTemplate(secrets, dotenvOpts.quote, dotenvSampleName, false)
 		if err2 != nil {
-			return errors.Wrap(err, "Failed to dump secrets with dotenv template.")
+			return errors.Wrap(err, "Failed to dump secrets with dotenv template")
 		}
 	}
 
 	body := []byte(strings.Join(dotenv, "\n") + "\n")
 	if err := util.WriteFileWithoutSection(dotenvName, body); err != nil {
-		return errors.Wrapf(err, "Failed to write dotenv file. filename=%s", dotenvName)
+		return errors.Wrapf(err, "Failed to write dotenv file %s", dotenvName)
 	}
 
 	return nil

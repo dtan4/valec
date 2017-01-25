@@ -24,7 +24,7 @@ These resources will be created:
 func doInit(cmd *cobra.Command, args []string) error {
 	keyExists, err := aws.KMS.KeyExists(secret.DefaultKMSKey)
 	if err != nil {
-		return errors.Wrap(err, "Failed to check existence of key alias.")
+		return errors.Wrap(err, "Failed to check existence of key alias")
 	}
 
 	if keyExists {
@@ -32,11 +32,11 @@ func doInit(cmd *cobra.Command, args []string) error {
 	} else {
 		keyID, err := aws.KMS.CreateKey()
 		if err != nil {
-			return errors.Wrap(err, "Failed to create new key.")
+			return errors.Wrap(err, "Failed to create new key")
 		}
 
 		if err := aws.KMS.CreateKeyAlias(keyID, secret.DefaultKMSKey); err != nil {
-			return errors.Wrap(err, "Failed to attach alias to key.")
+			return errors.Wrap(err, "Failed to attach alias to key")
 		}
 
 		fmt.Printf("Key %s successfully created!\n", secret.DefaultKMSKey)
@@ -44,14 +44,14 @@ func doInit(cmd *cobra.Command, args []string) error {
 
 	tableExists, err := aws.DynamoDB.TableExists(rootOpts.tableName)
 	if err != nil {
-		return errors.Wrap(err, "Failed to check existence of DynamoDB table.")
+		return errors.Wrap(err, "Failed to check existence of DynamoDB table")
 	}
 
 	if tableExists {
 		fmt.Printf("DynamoDB table %q alreadly exists.\n", rootOpts.tableName)
 	} else {
 		if err := aws.DynamoDB.CreateTable(rootOpts.tableName); err != nil {
-			return errors.Wrapf(err, "Failed to create DynamoDB table. table=%s", rootOpts.tableName)
+			return errors.Wrapf(err, "Failed to create DynamoDB table %q", rootOpts.tableName)
 		}
 
 		fmt.Printf("DynamoDB table %s successfully created!\n", rootOpts.tableName)

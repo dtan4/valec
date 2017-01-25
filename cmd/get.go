@@ -17,18 +17,18 @@ var getCmd = &cobra.Command{
 
 func doGet(cmd *cobra.Command, args []string) error {
 	if len(args) != 2 {
-		return errors.New("Please specify both namespace and key.")
+		return errors.New("Please specify both namespace and key")
 	}
 	namespace, key := args[0], args[1]
 
 	secret, err := aws.DynamoDB.Get(rootOpts.tableName, namespace, key)
 	if err != nil {
-		return errors.Wrap(err, "Failed to retrieve secret.")
+		return errors.Wrap(err, "Failed to retrieve secret")
 	}
 
 	plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decrypt secret.")
+		return errors.Wrap(err, "Failed to decrypt secret")
 	}
 
 	fmt.Printf(plainValue)

@@ -57,7 +57,7 @@ func (c *Client) CreateTable(table string) error {
 		TableName: aws.String(table),
 	})
 	if err != nil {
-		return errors.Wrapf(err, "Failed to create DynamoDB table. table=%s", table)
+		return errors.Wrapf(err, "Failed to create DynamoDB %q", table)
 	}
 
 	return nil
@@ -79,7 +79,7 @@ func (c *Client) Delete(table, namespace string, secrets []*secret.Secret) error
 		}
 
 		if err := c.doBatchDelete(table, namespace, secrets[i*batchWriteItemMax:max]); err != nil {
-			return errors.Wrap(err, "Failed to delete items.")
+			return errors.Wrap(err, "Failed to delete items")
 		}
 	}
 
@@ -105,7 +105,7 @@ func (c *Client) DeleteNamespace(table, namespace string) error {
 
 	resp, err := c.api.Query(params)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to list up secrets. namespace=%s", namespace)
+		return errors.Wrapf(err, "Failed to list up secrets in namespace %q", namespace)
 	}
 
 	secrets := []*secret.Secret{}
@@ -129,7 +129,7 @@ func (c *Client) DeleteNamespace(table, namespace string) error {
 		}
 
 		if err := c.doBatchDelete(table, namespace, secrets[i*batchWriteItemMax:max]); err != nil {
-			return errors.Wrap(err, "Failed to delete items.")
+			return errors.Wrap(err, "Failed to delete items")
 		}
 	}
 
@@ -161,7 +161,7 @@ func (c *Client) doBatchDelete(table, namespace string, secrets []*secret.Secret
 		RequestItems: requestItems,
 	})
 	if err != nil {
-		return errors.Wrap(err, "Failed to insert items.")
+		return errors.Wrap(err, "Failed to insert items")
 	}
 
 	return nil
@@ -194,11 +194,11 @@ func (c *Client) Get(table, namespace, key string) (*secret.Secret, error) {
 
 	resp, err := c.api.Query(params)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to get secret. namespace=%s, key=%s", namespace, key)
+		return nil, errors.Wrapf(err, "Failed to get secret %q in namespace %q", key, namespace)
 	}
 
 	if len(resp.Items) == 0 {
-		return nil, errors.Errorf("No secret matched. namespace=%s, key=%s", namespace, key)
+		return nil, errors.Errorf("No secret matched to %q in namespace %q", key, namespace)
 	}
 
 	return &secret.Secret{
@@ -223,7 +223,7 @@ func (c *Client) Insert(table, namespace string, secrets []*secret.Secret) error
 		}
 
 		if err := c.doBatchInsert(table, namespace, secrets[i*batchWriteItemMax:max]); err != nil {
-			return errors.Wrap(err, "Failed to insert items.")
+			return errors.Wrap(err, "Failed to insert items")
 		}
 	}
 
@@ -258,7 +258,7 @@ func (c *Client) doBatchInsert(table, namespace string, secrets []*secret.Secret
 		RequestItems: requestItems,
 	})
 	if err != nil {
-		return errors.Wrap(err, "Failed to insert items.")
+		return errors.Wrap(err, "Failed to insert items")
 	}
 
 	return nil
@@ -283,7 +283,7 @@ func (c *Client) ListSecrets(table, namespace string) ([]*secret.Secret, error) 
 
 	resp, err := c.api.Query(params)
 	if err != nil {
-		return []*secret.Secret{}, errors.Wrapf(err, "Failed to list up secrets. namespace=%s", namespace)
+		return []*secret.Secret{}, errors.Wrapf(err, "Failed to list up secrets in namespace %q", namespace)
 	}
 
 	secrets := []*secret.Secret{}
@@ -306,7 +306,7 @@ func (c *Client) ListNamespaces(table string) ([]string, error) {
 		TableName: aws.String(table),
 	})
 	if err != nil {
-		return []string{}, errors.Wrapf(err, "Failed to retrieve items from DynamoDB table. table=%s", table)
+		return []string{}, errors.Wrapf(err, "Failed to retrieve items from DynamoDB table %q", table)
 	}
 
 	nsmap := map[string]bool{}
@@ -345,7 +345,7 @@ func (c *Client) NamespaceExists(table, namespace string) (bool, error) {
 
 	resp, err := c.api.Query(params)
 	if err != nil {
-		return false, errors.Wrapf(err, "Failed to list up secrets. table=%s", table)
+		return false, errors.Wrapf(err, "Failed to list up secrets in table %q", table)
 	}
 
 	return len(resp.Items) > 0, nil
@@ -355,7 +355,7 @@ func (c *Client) NamespaceExists(table, namespace string) (bool, error) {
 func (c *Client) TableExists(table string) (bool, error) {
 	resp, err := c.api.ListTables(&dynamodb.ListTablesInput{})
 	if err != nil {
-		return false, errors.Wrap(err, "Failed to retrieve DynamoDB tables.")
+		return false, errors.Wrap(err, "Failed to retrieve DynamoDB tables")
 	}
 
 	for _, tableName := range resp.TableNames {

@@ -17,7 +17,7 @@ func dumpAll(secrets secret.Secrets, quote bool) ([]string, error) {
 	for _, secret := range secrets {
 		plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
 		if err != nil {
-			return []string{}, errors.Wrap(err, "Failed to decrypt value.")
+			return []string{}, errors.Wrapf(err, "Failed to decrypt secret %q", secret.Key)
 		}
 
 		if quote {
@@ -33,7 +33,7 @@ func dumpAll(secrets secret.Secrets, quote bool) ([]string, error) {
 func dumpWithTemplate(secrets secret.Secrets, quote bool, dotenvTemplate string, override bool) ([]string, error) {
 	fp, err := os.Open(dotenvTemplate)
 	if err != nil {
-		return []string{}, errors.Wrapf(err, "Failed to open dotenv template. filename=%s", dotenvTemplate)
+		return []string{}, errors.Wrapf(err, "Failed to open dotenv file %s", dotenvTemplate)
 	}
 	defer fp.Close()
 
@@ -62,7 +62,7 @@ func dumpWithTemplate(secrets secret.Secrets, quote bool, dotenvTemplate string,
 			if ok {
 				plainValue, err := aws.KMS.DecryptBase64(key, v)
 				if err != nil {
-					return []string{}, errors.Wrap(err, "Failed to decrypt value.")
+					return []string{}, errors.Wrapf(err, "Failed to decrypt secret %q", key)
 				}
 
 				value = plainValue

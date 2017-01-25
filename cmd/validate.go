@@ -20,18 +20,18 @@ var validateCmd = &cobra.Command{
 
 func doValidate(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
-		return errors.New("Please specify secret directory.")
+		return errors.New("Please specify secret directory")
 	}
 	dirname := args[0]
 
 	files, err := util.ListYAMLFiles(dirname)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to read directory. dirname=%s", dirname)
+		return errors.Wrapf(err, "Failed to read directory %s", dirname)
 	}
 
 	for _, file := range files {
 		if err := validateFile(file); err != nil {
-			return errors.Wrapf(err, "Failed to validate file. filename=%s", file)
+			return errors.Wrapf(err, "Failed to validate file %s", file)
 		}
 	}
 
@@ -43,7 +43,7 @@ func validateFile(filename string) error {
 
 	_, secrets, err := secret.LoadFromYAML(filename)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to load secrets. filename=%s", filename)
+		return errors.Wrapf(err, "Failed to load secrets from %s", filename)
 	}
 
 	hasError := false
@@ -58,7 +58,7 @@ func validateFile(filename string) error {
 	}
 
 	if hasError {
-		return errors.New("Some secrets are invalid.")
+		return errors.New("Some secrets are invalid")
 	}
 
 	green.Println("  All secrets are valid.")

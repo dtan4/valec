@@ -42,7 +42,7 @@ func doList(cmd *cobra.Command, args []string) error {
 
 		secrets, err = aws.DynamoDB.ListSecrets(rootOpts.tableName, namespace)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to load secrets from DynamoDB. namespace=%s", namespace)
+			return errors.Wrapf(err, "Failed to load secrets in namespce %q from DynamoDB", namespace)
 		}
 
 		if len(secrets) == 0 {
@@ -51,7 +51,7 @@ func doList(cmd *cobra.Command, args []string) error {
 	} else {
 		_, secrets, err = secret.LoadFromYAML(listOpts.secretFile)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to load secrets from file. filename=%s", listOpts.secretFile)
+			return errors.Wrapf(err, "Failed to load secrets from file %s", listOpts.secretFile)
 		}
 	}
 
@@ -60,7 +60,7 @@ func doList(cmd *cobra.Command, args []string) error {
 	for _, secret := range secrets {
 		plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", secret.Key, secret.Value)
+			return errors.Wrapf(err, "Failed to decrypt secret %q", secret.Key)
 		}
 
 		padding := ""
