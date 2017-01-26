@@ -1,3 +1,9 @@
+# [v0.6.0](https://github.com/dtan4/valec/releases/tag/v0.5.6) (2017-01-26)
+
+## Features
+
+- Implement `valec get` command [#56](https://github.com/dtan4/valec/pull/56)
+
 # [v0.5.6](https://github.com/dtan4/valec/releases/tag/v0.5.6) (2017-01-23)
 
 ## Features
