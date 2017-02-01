@@ -2,8 +2,11 @@ package secret
 
 import (
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"sort"
 
+	"github.com/dtan4/valec/util"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
@@ -105,6 +108,13 @@ func (ss Secrets) SaveAsYAML(filename, kmsKey string) error {
 	body, err := yaml.Marshal(y)
 	if err != nil {
 		return errors.Wrap(err, "Failed to convert secrets as YAML.")
+	}
+
+	dir := filepath.Dir(filename)
+	if !util.IsExist(dir) {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return errors.Wrapf(err, "failed to create directory %q", dir)
+		}
 	}
 
 	if err := ioutil.WriteFile(filename, body, 0644); err != nil {
