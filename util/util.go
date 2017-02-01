@@ -48,6 +48,12 @@ func CompareStrings(src, dst []string) ([]string, []string) {
 	return added, deleted
 }
 
+// IsExist returns whether the given file / directory exists or not
+func IsExist(name string) bool {
+	_, err := os.Stat(name)
+	return err == nil || os.IsExist(err)
+}
+
 // IsSecretFile returns whether the given file is secret file or not
 func IsSecretFile(filename string) bool {
 	base := filepath.Base(filename)

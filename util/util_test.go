@@ -68,6 +68,43 @@ func TestCompareStrings(t *testing.T) {
 	}
 }
 
+func TestIsExist(t *testing.T) {
+	dir, err := ioutil.TempDir("", "test-save-as-dotenv")
+	if err != nil {
+		t.Fatalf("Failed to create tempdir. dir: %s", dir)
+	}
+	defer os.RemoveAll(dir)
+
+	name := filepath.Join(dir, "sample")
+	if err := ioutil.WriteFile(name, []byte("test"), 0644); err != nil {
+		t.Fatalf("Failed to create tempfile. name: %s", name)
+	}
+
+	testcases := []struct {
+		name     string
+		expected bool
+	}{
+		{
+			name:     "",
+			expected: true,
+		},
+		{
+			name:     "sample",
+			expected: true,
+		},
+		{
+			name:     "nonexist",
+			expected: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		if IsExist(filepath.Join(dir, tc.name)) != tc.expected {
+			t.Errorf("IsExist result is wrong. filename: %s, expected: %t", tc.name, tc.expected)
+		}
+	}
+}
+
 func TestIsSecretFile(t *testing.T) {
 	testcases := []struct {
 		filename string
