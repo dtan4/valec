@@ -1,5 +1,5 @@
 NAME      := valec
-VERSION   := v0.6.1
+VERSION   := v0.6.2
 REVISION  := $(shell git rev-parse --short HEAD)
 
 SRCS      := $(shell find . -name '*.go' -type f)
@@ -45,8 +45,8 @@ dist:
 	cd dist && \
 	$(DIST_DIRS) cp ../LICENSE {} \; && \
 	$(DIST_DIRS) cp ../README.md {} \; && \
-	$(DIST_DIRS) tar -zcf $(NAME)-$(VERSION)-{}.tar.gz {} \; && \
-	$(DIST_DIRS) zip -r $(NAME)-$(VERSION)-{}.zip {} \; && \
+	$(DIST_DIRS) tar -zcf $(NAME)-{}-$(VERSION).tar.gz {} \; && \
+	$(DIST_DIRS) zip -r $(NAME)-{}-$(VERSION).zip {} \; && \
 	cd ..
 
 .PHONY: glide
