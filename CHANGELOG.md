@@ -1,3 +1,8 @@
+# [v0.6.2](https://github.com/dtan4/valec/releases/tag/v0.6.2) (2017-02-02)
+
+Features and behaviors are the same as v0.6.1.
+This release is made to release archives with new naming rule.
+
 # [v0.6.1](https://github.com/dtan4/valec/releases/tag/v0.6.1) (2017-02-01)
 
 ## Fixed
