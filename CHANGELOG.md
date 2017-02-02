@@ -1,4 +1,10 @@
-# [v0.6.0](https://github.com/dtan4/valec/releases/tag/v0.5.6) (2017-01-26)
+# [v0.6.1](https://github.com/dtan4/valec/releases/tag/v0.6.1) (2017-02-01)
+
+## Fixed
+
+- Create directory by `valec encrypt` [#58](https://github.com/dtan4/valec/pull/58)
+
+# [v0.6.0](https://github.com/dtan4/valec/releases/tag/v0.6.0) (2017-01-26)
 
 ## Features
 
