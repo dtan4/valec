@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	"github.com/dtan4/valec/aws"
 	"github.com/dtan4/valec/secret"
@@ -55,7 +57,7 @@ func doList(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	longestLength := longestKeyLength(secrets)
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 
 	for _, secret := range secrets {
 		plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
@@ -63,27 +65,12 @@ func doList(cmd *cobra.Command, args []string) error {
 			return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", secret.Key, secret.Value)
 		}
 
-		padding := ""
-		for i := 0; i < longestLength-len(secret.Key); i++ {
-			padding += " "
-		}
-
-		fmt.Printf("%s:%s %s\n", secret.Key, padding, plainValue)
+		fmt.Fprintf(w, "%s\t%s\n", secret.Key+":", plainValue)
 	}
+
+	w.Flush()
 
 	return nil
-}
-
-func longestKeyLength(secrets []*secret.Secret) int {
-	longest := 0
-
-	for _, secret := range secrets {
-		if longest < len(secret.Key) {
-			longest = len(secret.Key)
-		}
-	}
-
-	return longest
 }
 
 func init() {
