@@ -17,9 +17,11 @@ var listCmd = &cobra.Command{
 	Short: "List stored secrets",
 	Long: `List stored secrets
 
-To list secrets stored in DynamoDB, specify namespace:
+To list secret keys stored in DynamoDB, specify namespace:
   $ valec list NAMESPACE
-to list secrets stored in local file, specify file:
+To list secret values together:
+  $ valec list NAMESPACE --show-values
+To list secret keys stored in local file, specify file:
   $ valec list -f qa.yaml
 
 Encrypted values are decrypted and printed as plain text.`,
