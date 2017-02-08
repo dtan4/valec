@@ -28,6 +28,7 @@ Encrypted values are decrypted and printed as plain text.`,
 
 var listOpts = struct {
 	secretFile string
+	showValues bool
 }{}
 
 func doList(cmd *cobra.Command, args []string) error {
@@ -65,7 +66,11 @@ func doList(cmd *cobra.Command, args []string) error {
 			return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", secret.Key, secret.Value)
 		}
 
-		fmt.Fprintf(w, "%s\t%s\n", secret.Key+":", plainValue)
+		if listOpts.showValues {
+			fmt.Fprintf(w, "%s\t%s\n", secret.Key+":", plainValue)
+		} else {
+			fmt.Fprintln(w, secret.Key)
+		}
 	}
 
 	w.Flush()
@@ -77,4 +82,5 @@ func init() {
 	RootCmd.AddCommand(listCmd)
 
 	listCmd.Flags().StringVarP(&listOpts.secretFile, "file", "f", "", "Secret file")
+	listCmd.Flags().BoolVar(&listOpts.showValues, "show-values", false, "Show values")
 }
