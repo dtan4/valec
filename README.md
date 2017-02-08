@@ -199,9 +199,16 @@ $ valec init
 
 List stored secrets
 
+Only secret keys are shown by default.
+To show values together, use `--show-values` flag.
+
 ```bash
-# List secrets stored in DynamoDB
+# List secret keys stored in DynamoDB
 $ valec list hoge
+HOGE
+
+# List secret keys and values together
+$ valec list hoge --show-values
 HOGE: fuga
 
 # List secrets stored in local file
