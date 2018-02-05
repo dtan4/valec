@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"syscall"
@@ -33,19 +32,19 @@ func doExec(cmd *cobra.Command, args []string) error {
 		return errors.Wrapf(err, "Failed to load secrets from DynamoDB. namespace=%s", namespace)
 	}
 
-	envs := os.Environ()
-
 	for _, secret := range secrets {
 		plainValue, err := aws.KMS.DecryptBase64(secret.Key, secret.Value)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to decrypt value. key=%q, value=%q", secret.Key, secret.Value)
 		}
 
-		envs = append(envs, fmt.Sprintf("%s=%s", secret.Key, plainValue))
+		if err := os.Setenv(secret.Key, plainValue); err != nil {
+			return errors.Wrapf(err, "Failed to set new enviornment variable. key=%q")
+		}
 	}
 
 	execCmd := exec.Command(args[1], args[2:]...)
-	execCmd.Env = envs
+	execCmd.Env = os.Environ()
 	execCmd.Stderr = os.Stderr
 	execCmd.Stdout = os.Stdout
 	execCmd.Stdin = os.Stdin
