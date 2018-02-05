@@ -4,6 +4,7 @@ REVISION  := $(shell git rev-parse --short HEAD)
 
 SRCS      := $(shell find . -name '*.go' -type f)
 LDFLAGS   := -ldflags="-s -w -X \"github.com/dtan4/valec/version.Version=$(VERSION)\" -X \"github.com/dtan4/valec/version.Revision=$(REVISION)\" -extldflags \"-static\""
+NOVENDOR  := $(shell go list ./... | grep -v vendor)
 
 DIST_DIRS := find * -type d -exec
 
@@ -36,9 +37,15 @@ cross-build:
 		done; \
 	done
 
+.PHONY: dep
+dep:
+ifeq ($(shell command -v dep 2> /dev/null),)
+	go get -u github.com/golang/dep/cmd/dep
+endif
+
 .PHONY: deps
-deps: glide
-	glide install
+deps: dep
+	dep ensure -v
 
 .PHONY: dist
 dist:
@@ -48,12 +55,6 @@ dist:
 	$(DIST_DIRS) tar -zcf $(NAME)-{}-$(VERSION).tar.gz {} \; && \
 	$(DIST_DIRS) zip -r $(NAME)-{}-$(VERSION).zip {} \; && \
 	cd ..
-
-.PHONY: glide
-glide:
-ifeq ($(shell command -v glide 2> /dev/null),)
-	curl https://glide.sh/get | sh
-endif
 
 .PHONY: install
 install:
@@ -66,8 +67,4 @@ release:
 
 .PHONY: test
 test:
-	go test -cover -race -v `glide novendor`
-
-.PHONY: update-deps
-update-deps: glide
-	glide update
+	go test -cover -race -v $(NOVENDOR)
