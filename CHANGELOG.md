@@ -1,3 +1,10 @@
+# [v0.7.0](https://github.com/dtan4/valec/releases/tag/v0.7.0) (2018-02-06)
+
+- Overwrite envs correctly by using os.Setenv [#65](https://github.com/dtan4/valec/pull/65)
+- Build with Go 1.9.x by dtan4 [#63](https://github.com/dtan4/valec/pull/63)
+- Hide values in list command by default [#62](https://github.com/dtan4/valec/pull/62)
+- Use tabwriter to compose secrets table [#61](https://github.com/dtan4/valec/pull/61)
+
 # [v0.6.2](https://github.com/dtan4/valec/releases/tag/v0.6.2) (2017-02-02)
 
 Features and behaviors are the same as v0.6.1.
